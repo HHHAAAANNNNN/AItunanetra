@@ -13,6 +13,8 @@ class MainApp extends StatelessWidget {
     return MaterialApp(
       title: 'Aplikasi Login',
       theme: ThemeData(
+        // Mengatur fontFamily secara global untuk semua TextStyle yang tidak menimpanya
+        fontFamily: 'Helvetica',
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
@@ -66,9 +68,8 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     _logoPositionAnimation = Tween<Offset>(
       begin: const Offset(0.0, 0.0), // Tengah layar
       // Offset akhir disesuaikan agar logo berada di posisi yang tepat di halaman login
-      // Nilai -0.4 adalah perkiraan yang bagus untuk memposisikan logo di bagian atas
-      // Anda mungkin perlu menyesuaikan nilai ini jika layout halaman login berubah signifikan
-      end: const Offset(0.0, -0.4),
+      // Nilai -0.269 adalah penyesuaian yang lebih tepat agar pas dengan posisi logo di halaman login
+      end: const Offset(0.0, -0.269),
     ).animate(
       CurvedAnimation(
         parent: _controller,
@@ -167,6 +168,7 @@ class LoginPage extends StatelessWidget {
             padding: const EdgeInsets.all(24.0),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: <Widget>[
                 // Logo di bagian atas halaman login
                 Image.asset(
@@ -178,29 +180,12 @@ class LoginPage extends StatelessWidget {
                 const Text(
                   'Sign In to Your Account',
                   style: TextStyle(
-                    fontSize: 24,
+                    fontSize: 36,
                     fontWeight: FontWeight.bold,
-                    color: Colors.black87,
+                    color: Color(0xFF0D0D0D), // Warna teks diubah ke #0D0D0D
+                    fontFamily: 'Helvetica', // Font diubah ke Helvetica
                   ),
-                ),
-                const SizedBox(height: 10),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Text(
-                      'Don\'t Have an Account?',
-                      style: TextStyle(color: Colors.black54),
-                    ),
-                    TextButton(
-                      onPressed: () {
-                        // Aksi untuk SignUp
-                      },
-                      child: const Text(
-                        'Sign Up',
-                        style: TextStyle(color: Colors.blue),
-                      ),
-                    ),
-                  ],
+                  textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 30),
                 TextField(
@@ -209,9 +194,25 @@ class LoginPage extends StatelessWidget {
                     prefixIcon: const Icon(Icons.email),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(
+                          width: 2.0), // Border lebih tebal
+                    ),
+                    focusedBorder: OutlineInputBorder( // Border saat focused (opsional, bisa disamakan)
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(
+                          width: 2.0, color: Color(0xFF0D0D0D)), // Warna dan tebal saat focused
+                    ),
+                    enabledBorder: OutlineInputBorder( // Border saat tidak focused (opsional, bisa disamakan)
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(
+                          width: 2.0, color: Color(0xFF0D0D0D)), // Warna dan tebal saat enabled
                     ),
                     filled: true,
                     fillColor: Colors.white.withOpacity(0.8),
+                    labelStyle: const TextStyle(
+                      fontFamily: 'Helvetica', // Font diubah ke Helvetica
+                      color: Colors.black54, // Warna placeholder tetap normal
+                    ),
                   ),
                 ),
                 const SizedBox(height: 20),
@@ -223,9 +224,25 @@ class LoginPage extends StatelessWidget {
                     suffixIcon: const Icon(Icons.visibility_off),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(
+                          width: 2.0), // Border lebih tebal
+                    ),
+                    focusedBorder: OutlineInputBorder( // Border saat focused (opsional, bisa disamakan)
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(
+                          width: 2.0, color: Color(0xFF0D0D0D)), // Warna dan tebal saat focused
+                    ),
+                    enabledBorder: OutlineInputBorder( // Border saat tidak focused (opsional, bisa disamakan)
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(
+                          width: 2.0, color: Color(0xFF0D0D0D)), // Warna dan tebal saat enabled
                     ),
                     filled: true,
                     fillColor: Colors.white.withOpacity(0.8),
+                    labelStyle: const TextStyle(
+                      fontFamily: 'Helvetica', // Font diubah ke Helvetica
+                      color: Colors.black54, // Warna placeholder tetap normal
+                    ),
                   ),
                 ),
                 const SizedBox(height: 10),
@@ -237,7 +254,10 @@ class LoginPage extends StatelessWidget {
                     },
                     child: const Text(
                       'Forgot password?',
-                      style: TextStyle(color: Colors.black54),
+                      style: TextStyle(
+                        color: Color(0xFF0D0D0D), // Warna teks diubah ke #0D0D0D
+                        fontFamily: 'Helvetica', // Font diubah ke Helvetica
+                      ),
                     ),
                   ),
                 ),
@@ -247,15 +267,20 @@ class LoginPage extends StatelessWidget {
                     // Aksi untuk Sign In
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.black, // Warna tombol Sign In
+                    backgroundColor: const Color(0xFF0D0D0D), // Warna tombol Sign In diubah ke #0D0D0D
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                    // Memperlebar tombol Sign In
+                    padding: const EdgeInsets.symmetric(horizontal: 80, vertical: 15),
                   ),
                   child: const Text(
                     'Sign In',
-                    style: TextStyle(fontSize: 18, color: Colors.white),
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: Colors.white,
+                      fontFamily: 'Helvetica', // Font diubah ke Helvetica
+                    ),
                   ),
                 ),
               ],
