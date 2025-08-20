@@ -10,7 +10,6 @@ AItunanetra is an assistive mobile application designed to empower low-vision an
 
 - **Real-Time Object Detection**: Utilizes YOLO for fast and accurate identification of objects through the device’s camera.
 - **Accessible Design**: User interface and interactions are tailored for users with low vision or blindness, ensuring ease of use.
-- **Multi-Language Support**: Built with Dart (Flutter) for cross-platform compatibility; integrates C++, CMake, Swift, C, and HTML for performance and native features.
 - **Voice Feedback**: Optionally provides spoken descriptions of detected objects to aid non-visual interaction.
 - **Customizable Detection**: Allows users to select specific objects of interest for focused navigation.
 
@@ -18,9 +17,6 @@ AItunanetra is an assistive mobile application designed to empower low-vision an
 
 - **Flutter (Dart)**: Main framework for cross-platform mobile development.
 - **YOLO (C++/C/CMake)**: High-performance object detection engine.
-- **Swift**: iOS-specific integrations and optimizations.
-- **HTML**: UI components and documentation.
-- **Other**: Additional dependencies and configuration files.
 
 ## Installation
 
