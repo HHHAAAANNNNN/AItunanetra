@@ -33,47 +33,25 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
-  late Animation<double> _logoSizeAnimation;
-  late Animation<Offset> _logoPositionAnimation;
+  late Animation<double> _logoFadeAnimation; // Animasi fade out logo
 
-  // Ukuran awal logo di splash screen
+  // Ukuran logo di splash screen (tidak lagi dianimasikan ukurannya)
   final double _initialLogoWidth = 155.0;
   final double _initialLogoHeight = 135.0;
-
-  // Ukuran target logo di halaman login (sekitar 2/3 dari ukuran awal)
-  final double _targetLogoWidth = 102.0; // 155 * (2/3)
-  final double _targetLogoHeight = 89.0; // 135 * (2/3)
 
   @override
   void initState() {
     super.initState();
     _controller = AnimationController(
-      duration: const Duration(seconds: 2), // Durasi total animasi dan jeda
+      duration: const Duration(milliseconds: 1500), // Total durasi: 1 detik jeda + 0.5 detik fade out
       vsync: this,
     );
 
-    // Hitung skala akhir berdasarkan perbandingan ukuran target dan awal
-    double endScale = _targetLogoWidth / _initialLogoWidth;
-
-    // Animasi ukuran logo (zoom out)
-    _logoSizeAnimation = Tween<double>(begin: 1.0, end: endScale).animate(
+    // Animasi fade out logo: Mulai setelah 1 detik (1000ms), berakhir pada 1.5 detik (1500ms)
+    _logoFadeAnimation = Tween<double>(begin: 1.0, end: 0.0).animate(
       CurvedAnimation(
         parent: _controller,
-        curve: const Interval(0.5, 1.0, curve: Curves.easeInOut), // Mulai animasi zoom setelah jeda 1 detik
-      ),
-    );
-
-    // Animasi posisi logo (ke atas menuju posisi di halaman login)
-    // Penyesuaian offset berdasarkan proporsi layar
-    _logoPositionAnimation = Tween<Offset>(
-      begin: const Offset(0.0, 0.0), // Tengah layar
-      // Offset akhir disesuaikan agar logo berada di posisi yang tepat di halaman login
-      // Nilai -0.269 adalah penyesuaian yang lebih tepat agar pas dengan posisi logo di halaman login
-      end: const Offset(0.0, -0.269),
-    ).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: const Interval(0.5, 1.0, curve: Curves.easeInOut), // Mulai animasi posisi setelah jeda 1 detik
+        curve: const Interval(1000 / 1500, 1.0, curve: Curves.easeOut), // Fade mulai pada 1 detik, selesai pada 1.5 detik
       ),
     );
 
@@ -84,9 +62,9 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
         // Setelah animasi selesai, navigasi ke halaman login
         Navigator.of(context).pushReplacement(
           PageRouteBuilder(
-            transitionDuration: const Duration(milliseconds: 500), // Transisi antar halaman
+            transitionDuration: const Duration(milliseconds: 1500), // Durasi fade in halaman login
             pageBuilder: (context, animation, secondaryAnimation) =>
-                FadeTransition(opacity: animation, child: const LoginPage()),
+                FadeTransition(opacity: animation, child: const LoginPage()), // Halaman login fade in
           ),
         );
       }
@@ -116,19 +94,16 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
           ),
         ),
         child: Center(
+          // AnimatedBuilder digunakan untuk menerapkan animasi opacity pada logo
           child: AnimatedBuilder(
             animation: _controller,
             builder: (context, child) {
-              return Transform.translate(
-                // Menggunakan _initialLogoHeight/2 untuk menggeser titik tengah logo agar animasinya lebih akurat
-                offset: _logoPositionAnimation.value * MediaQuery.of(context).size.height,
-                child: Transform.scale(
-                  scale: _logoSizeAnimation.value,
-                  child: Image.asset(
-                    'assets/logo.png', // Pastikan Anda memiliki file 'logo.png' di folder 'assets'
-                    width: _initialLogoWidth, // Ukuran awal logo
-                    height: _initialLogoHeight,
-                  ),
+              return Opacity(
+                opacity: _logoFadeAnimation.value,
+                child: Image.asset(
+                  'assets/logo.png', // Pastikan Anda memiliki file 'logo.png' di folder 'assets'
+                  width: _initialLogoWidth, // Ukuran logo tetap
+                  height: _initialLogoHeight,
                 ),
               );
             },
@@ -143,9 +118,9 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
 class LoginPage extends StatelessWidget {
   const LoginPage({super.key});
 
-  // Ukuran logo di halaman login harus cocok dengan ukuran target dari animasi splash screen
-  final double _logoWidth = 102.0; // Cocok dengan _targetLogoWidth di SplashScreen
-  final double _logoHeight = 89.0;  // Cocok dengan _targetLogoHeight di SplashScreen
+  // Ukuran logo di halaman login
+  final double _logoWidth = 102.0;
+  final double _logoHeight = 89.0;
 
   @override
   Widget build(BuildContext context) {
@@ -176,7 +151,7 @@ class LoginPage extends StatelessWidget {
                   width: _logoWidth, // Ukuran logo di halaman login
                   height: _logoHeight,
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 50),
                 const Text(
                   'Sign In to Your Account',
                   style: TextStyle(
@@ -187,36 +162,35 @@ class LoginPage extends StatelessWidget {
                   ),
                   textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 30),
-                TextField(
+                const SizedBox(height: 30), // Mengembalikan ke tanpa width
+                // TextField Email
+                TextField( // Kembali tanpa SizedBox wrapper untuk width
                   decoration: InputDecoration(
                     labelText: 'Email',
                     prefixIcon: const Icon(Icons.email),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(
-                          width: 2.0), // Border lebih tebal
+                      borderSide: const BorderSide(width: 2.0),
                     ),
-                    focusedBorder: OutlineInputBorder( // Border saat focused (opsional, bisa disamakan)
+                    focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(
-                          width: 2.0, color: Color(0xFF0D0D0D)), // Warna dan tebal saat focused
+                      borderSide: const BorderSide(width: 2.0, color: Color(0xFF0D0D0D)),
                     ),
-                    enabledBorder: OutlineInputBorder( // Border saat tidak focused (opsional, bisa disamakan)
+                    enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(
-                          width: 2.0, color: Color(0xFF0D0D0D)), // Warna dan tebal saat enabled
+                      borderSide: const BorderSide(width: 2.0, color: Color(0xFF0D0D0D)),
                     ),
                     filled: true,
                     fillColor: Colors.white.withOpacity(0.8),
                     labelStyle: const TextStyle(
-                      fontFamily: 'Helvetica', // Font diubah ke Helvetica
-                      color: Colors.black54, // Warna placeholder tetap normal
+                      fontFamily: 'Helvetica',
+                      color: Colors.black54,
                     ),
                   ),
                 ),
                 const SizedBox(height: 20),
-                TextField(
+                // TextField Password
+                TextField( // Kembali tanpa SizedBox wrapper untuk width
                   obscureText: true,
                   decoration: InputDecoration(
                     labelText: 'Password',
@@ -224,30 +198,27 @@ class LoginPage extends StatelessWidget {
                     suffixIcon: const Icon(Icons.visibility_off),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(
-                          width: 2.0), // Border lebih tebal
+                      borderSide: const BorderSide(width: 2.0),
                     ),
-                    focusedBorder: OutlineInputBorder( // Border saat focused (opsional, bisa disamakan)
+                    focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(
-                          width: 2.0, color: Color(0xFF0D0D0D)), // Warna dan tebal saat focused
+                      borderSide: const BorderSide(width: 2.0, color: Color(0xFF0D0D0D)),
                     ),
-                    enabledBorder: OutlineInputBorder( // Border saat tidak focused (opsional, bisa disamakan)
+                    enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(
-                          width: 2.0, color: Color(0xFF0D0D0D)), // Warna dan tebal saat enabled
+                      borderSide: const BorderSide(width: 2.0, color: Color(0xFF0D0D0D)),
                     ),
                     filled: true,
                     fillColor: Colors.white.withOpacity(0.8),
                     labelStyle: const TextStyle(
-                      fontFamily: 'Helvetica', // Font diubah ke Helvetica
-                      color: Colors.black54, // Warna placeholder tetap normal
+                      fontFamily: 'Helvetica',
+                      color: Colors.black54,
                     ),
                   ),
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 30),
                 Align(
-                  alignment: Alignment.centerRight,
+                  alignment: Alignment.center,
                   child: TextButton(
                     onPressed: () {
                       // Aksi untuk Forgot Password
@@ -255,23 +226,23 @@ class LoginPage extends StatelessWidget {
                     child: const Text(
                       'Forgot password?',
                       style: TextStyle(
-                        color: Color(0xFF0D0D0D), // Warna teks diubah ke #0D0D0D
-                        fontFamily: 'Helvetica', // Font diubah ke Helvetica
+                        color: Color(0xFF0D0D0D),
+                        fontFamily: 'Helvetica',
+                        fontSize: 16,
                       ),
                     ),
                   ),
                 ),
-                const SizedBox(height: 30),
+                const SizedBox(height: 5),
                 ElevatedButton(
                   onPressed: () {
                     // Aksi untuk Sign In
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF0D0D0D), // Warna tombol Sign In diubah ke #0D0D0D
+                    backgroundColor: const Color(0xFF0D0D0D),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    // Memperlebar tombol Sign In
                     padding: const EdgeInsets.symmetric(horizontal: 80, vertical: 15),
                   ),
                   child: const Text(
@@ -279,7 +250,7 @@ class LoginPage extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 18,
                       color: Colors.white,
-                      fontFamily: 'Helvetica', // Font diubah ke Helvetica
+                      fontFamily: 'Helvetica',
                     ),
                   ),
                 ),
