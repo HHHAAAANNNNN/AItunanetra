@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:aitunanetra/dashboard_page.dart';
 
 void main() {
   runApp(const MainApp());
@@ -236,7 +237,11 @@ class LoginPage extends StatelessWidget {
                 const SizedBox(height: 5),
                 ElevatedButton(
                   onPressed: () {
-                    // Aksi untuk Sign In
+                    // --- BARIS INI YANG DIUBAH ---
+                    // Navigasi ke DashboardPage saat tombol Sign In ditekan
+                    Navigator.of(context).pushReplacement(
+                      MaterialPageRoute(builder: (context) => const DashboardPage()),
+                    );
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF0D0D0D),
