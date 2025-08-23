@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:permission_handler/permission_handler.dart';
-// import 'package:torch_light/torch_light.dart'; // Hapus atau komentari ini
 import 'package:audioplayers/audioplayers.dart';
 
 class DashboardPage extends StatefulWidget {
@@ -17,7 +16,8 @@ class _DashboardPageState extends State<DashboardPage> {
   bool _isFlashOn = false;
   bool _isMuted = false;
   AudioPlayer _audioPlayer = AudioPlayer();
-  bool _showMenu = false; // State untuk mengontrol visibilitas menu logo
+  bool _showMenu = false; // State untuk mengontrol visibilitas AnimatedContainer (ukuran box)
+  bool _showMenuItems = false; // State baru untuk mengontrol visibilitas item menu (opacity)
 
   @override
   void initState() {
@@ -28,16 +28,6 @@ class _DashboardPageState extends State<DashboardPage> {
 
   // Inisialisasi Audio Player
   void _initAudioPlayer() async {
-    // Memutar suara secara loop sebagai latar belakang (contoh, ganti dengan aset suara Anda)
-    // Untuk tujuan demonstrasi, kita akan memainkan suara lokal.
-    // Anda perlu menambahkan file suara ke folder 'assets' dan mendeklarasikannya di pubspec.yaml
-    // Contoh:
-    // await _audioPlayer.setSourceAsset('audio/background_sound.mp3');
-    // await _audioPlayer.setReleaseMode(ReleaseMode.loop);
-    // await _audioPlayer.resume();
-
-    // Untuk demo awal tanpa aset suara, kita bisa melewati pemutaran default
-    // atau menggunakan URL jika tersedia. Untuk saat ini, asumsikan default mute
     _audioPlayer.setVolume(1.0); // Default volume, akan diubah jika _isMuted true
     _audioPlayer.setReleaseMode(ReleaseMode.loop);
   }
@@ -50,11 +40,6 @@ class _DashboardPageState extends State<DashboardPage> {
         _audioPlayer.setVolume(0.0);
       } else {
         _audioPlayer.setVolume(1.0);
-        // Jika suara belum diputar, dan sekarang unmuted, mulai putar
-        // Anda mungkin perlu memanggil _audioPlayer.resume() atau setel sumber lagi
-        // jika pemutaran berhenti sepenuhnya saat dimute.
-        // Untuk demo, asumsikan _audioPlayer sudah memiliki sumber yang disetel
-        // dan hanya mengatur volume.
       }
     });
     _showMessage(_isMuted ? 'Suara Dimatikan' : 'Suara Dihidupkan');
@@ -62,7 +47,6 @@ class _DashboardPageState extends State<DashboardPage> {
 
   // Inisialisasi Kamera
   Future<void> _initializeCamera() async {
-    // Meminta izin kamera
     var status = await Permission.camera.request();
     if (status.isGranted) {
       _cameras = await availableCameras();
@@ -70,7 +54,7 @@ class _DashboardPageState extends State<DashboardPage> {
         _cameraController = CameraController(
           _cameras![0], // Menggunakan kamera pertama (biasanya belakang)
           ResolutionPreset.medium,
-          enableAudio: false, // Kamera tidak perlu merekam audio untuk latar belakang
+          enableAudio: false,
         );
 
         _cameraController!.initialize().then((_) {
@@ -110,7 +94,7 @@ class _DashboardPageState extends State<DashboardPage> {
         await _cameraController!.setFlashMode(FlashMode.off);
         _showMessage('Flashlight Dimatikan');
       } else {
-        await _cameraController!.setFlashMode(FlashMode.torch); // Menggunakan mode torch
+        await _cameraController!.setFlashMode(FlashMode.torch);
         _showMessage('Flashlight Dinyalakan');
       }
       setState(() {
@@ -170,90 +154,92 @@ class _DashboardPageState extends State<DashboardPage> {
           Positioned(
             top: 40,
             right: 20,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      _showMenu = !_showMenu;
-                    });
-                  },
-                  child: Container(
-                    width: 50,
-                    height: 50,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFEEF26B), // Warna tombol
-                      borderRadius: BorderRadius.circular(25),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.3),
-                          spreadRadius: 1,
-                          blurRadius: 3,
-                          offset: const Offset(0, 2),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 300), // Durasi transisi AnimatedContainer
+              curve: Curves.easeInOut,
+              width: 50, // Lebar tetap 50
+              height: _showMenu ? 150.0 : 50.0, // Tinggi berubah dari 50 ke 170
+              decoration: BoxDecoration(
+                color: const Color(0x7F818C2E), // Warna #818C2E dengan opacity 75%
+                borderRadius: BorderRadius.circular(_showMenu ? 25.0 : 25.0),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.3),
+                    spreadRadius: 1,
+                    blurRadius: 3,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Tombol Logo (selalu terlihat)
+                  GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _showMenu = !_showMenu; // Mengubah ukuran container
+                        if (_showMenu) {
+                          // Jika membuka menu, tampilkan item setelah transisi container + 500ms delay
+                          Future.delayed(const Duration(milliseconds: 300), () {
+                            if (mounted && _showMenu) { // Pastikan widget masih mounted dan menu masih terbuka
+                              setState(() {
+                                _showMenuItems = true; // Fade in menu items
+                              });
+                            }
+                          });
+                        } else {
+                          // Jika menutup menu, sembunyikan item segera
+                          setState(() {
+                            _showMenuItems = false; // Fade out menu items
+                          });
+                        }
+                      });
+                    },
+                    child: Container(
+                      width: 50,
+                      height: 50,
+                      color: Colors.transparent,
+                      child: Center(
+                        child: Image.asset(
+                          'assets/logo.png', // Logo Anda
+                          width: 30,
+                          height: 30,
                         ),
-                      ],
-                    ),
-                    child: Center(
-                      child: Image.asset(
-                        'assets/logo.png', // Logo Anda
-                        width: 30,
-                        height: 30,
                       ),
                     ),
                   ),
-                ),
-                if (_showMenu)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 8.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        SizedBox(
-                          width: 120, // Lebar tombol menu
-                          child: ElevatedButton(
+                  // Menu item (Profile & Setting) hanya muncul saat _showMenuItems true
+                  if (_showMenu) // Pastikan container sudah membesar sebelum mencoba menampilkan item
+                    AnimatedOpacity(
+                      opacity: _showMenuItems ? 1.0 : 0.0, // Dikontrol oleh _showMenuItems
+                      duration: const Duration(milliseconds: 100), // Durasi fade in/out item
+                      curve: Curves.easeInOut,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          const SizedBox(height: 1),
+                          // Tombol User Profile sebagai IconButton
+                          IconButton(
+                            icon: const Icon(Icons.person, color: Color(0xFF0D0D0D), size: 24),
                             onPressed: () {
                               _showMessage('Tombol User Profile ditekan');
-                              // Aksi untuk User Profile
                             },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFFEEF26B),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              padding: const EdgeInsets.symmetric(vertical: 10),
-                            ),
-                            child: const Text(
-                              'User Profile',
-                              style: TextStyle(color: Color(0xFF0D0D0D), fontFamily: 'Helvetica'),
-                            ),
+                            tooltip: 'Profile',
                           ),
-                        ),
-                        const SizedBox(height: 8),
-                        SizedBox(
-                          width: 120, // Lebar tombol menu
-                          child: ElevatedButton(
+                          // Tombol Setting sebagai IconButton
+                          IconButton(
+                            icon: const Icon(Icons.settings, color: Color(0xFF0D0D0D), size: 24),
                             onPressed: () {
                               _showMessage('Tombol Setting ditekan');
-                              // Aksi untuk Setting
                             },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFFEEF26B),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              padding: const EdgeInsets.symmetric(vertical: 10),
-                            ),
-                            child: const Text(
-                              'Setting',
-                              style: TextStyle(color: Color(0xFF0D0D0D), fontFamily: 'Helvetica'),
-                            ),
+                            tooltip: 'Setting',
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-              ],
+                ],
+              ),
             ),
           ),
 
