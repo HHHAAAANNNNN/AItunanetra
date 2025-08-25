@@ -23,5 +23,8 @@ flutter:
 
   assets:
     - assets/logo.png
+    - assets/ProfileDummy.png
+    - assets/text_fields.png
+    - assets/sun.png
 
 

@@ -1,7 +1,9 @@
+import 'package:aitunanetra/user_profile_page.dart';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:aitunanetra/setting_page.dart';
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
@@ -223,7 +225,9 @@ class _DashboardPageState extends State<DashboardPage> {
                           IconButton(
                             icon: const Icon(Icons.person, color: Color(0xFF0D0D0D), size: 24),
                             onPressed: () {
-                              _showMessage('Tombol User Profile ditekan');
+                              Navigator.of(context).push(
+                                MaterialPageRoute(builder: (context) => const UserProfilePage()),
+                              );
                             },
                             tooltip: 'Profile',
                           ),
@@ -231,7 +235,9 @@ class _DashboardPageState extends State<DashboardPage> {
                           IconButton(
                             icon: const Icon(Icons.settings, color: Color(0xFF0D0D0D), size: 24),
                             onPressed: () {
-                              _showMessage('Tombol Setting ditekan');
+                              Navigator.of(context).push(
+                                MaterialPageRoute(builder: (context) => const SettingPage()),
+                              );
                             },
                             tooltip: 'Setting',
                           ),
