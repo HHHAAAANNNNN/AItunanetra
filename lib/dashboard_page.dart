@@ -1,12 +1,14 @@
-import 'package:aitunanetra/user_profile_page.dart';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:audioplayers/audioplayers.dart';
-import 'package:aitunanetra/setting_page.dart';
+import 'package:aitunanetra/user_profile_page.dart';
+import 'package:aitunanetra/setting_page.dart'; // Import halaman SettingPage
 
 class DashboardPage extends StatefulWidget {
-  const DashboardPage({super.key});
+  final bool loggedInSuccessfully; // Tambahkan properti ini
+
+  const DashboardPage({super.key, this.loggedInSuccessfully = false}); // Update konstruktor
 
   @override
   State<DashboardPage> createState() => _DashboardPageState();
@@ -26,6 +28,15 @@ class _DashboardPageState extends State<DashboardPage> {
     super.initState();
     _initializeCamera();
     _initAudioPlayer();
+
+    // Tampilkan notifikasi jika berhasil login
+    if (widget.loggedInSuccessfully) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Berhasil Login!')),
+        );
+      });
+    }
   }
 
   // Inisialisasi Audio Player
@@ -162,7 +173,7 @@ class _DashboardPageState extends State<DashboardPage> {
               width: 50, // Lebar tetap 50
               height: _showMenu ? 150.0 : 50.0, // Tinggi berubah dari 50 ke 170
               decoration: BoxDecoration(
-                color: const Color(0x7F818C2E), // Warna #818C2E dengan opacity 75%
+                color: const Color(0xBF818C2E), // Warna #818C2E dengan opacity 75%
                 borderRadius: BorderRadius.circular(_showMenu ? 25.0 : 25.0),
                 boxShadow: [
                   BoxShadow(
@@ -183,7 +194,7 @@ class _DashboardPageState extends State<DashboardPage> {
                         _showMenu = !_showMenu; // Mengubah ukuran container
                         if (_showMenu) {
                           // Jika membuka menu, tampilkan item setelah transisi container + 500ms delay
-                          Future.delayed(const Duration(milliseconds: 300), () {
+                          Future.delayed(const Duration(milliseconds: 200), () {
                             if (mounted && _showMenu) { // Pastikan widget masih mounted dan menu masih terbuka
                               setState(() {
                                 _showMenuItems = true; // Fade in menu items
@@ -215,7 +226,7 @@ class _DashboardPageState extends State<DashboardPage> {
                   if (_showMenu) // Pastikan container sudah membesar sebelum mencoba menampilkan item
                     AnimatedOpacity(
                       opacity: _showMenuItems ? 1.0 : 0.0, // Dikontrol oleh _showMenuItems
-                      duration: const Duration(milliseconds: 100), // Durasi fade in/out item
+                      duration: const Duration(milliseconds: 300), // Durasi fade in/out item
                       curve: Curves.easeInOut,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.center,

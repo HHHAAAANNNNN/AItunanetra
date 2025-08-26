@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:aitunanetra/dashboard_page.dart'; // Import halaman DashboardPage
 
 class UserProfilePage extends StatelessWidget {
   const UserProfilePage({super.key});
@@ -169,9 +170,10 @@ class UserProfilePage extends StatelessWidget {
                       children: [
                         ElevatedButton(
                           onPressed: () {
-                            // Aksi untuk Cancel (saat ini tidak berfungsi)
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Tombol Cancel ditekan')),
+                            // --- BARIS INI YANG DIUBAH ---
+                            // Pindahkan ke DashboardPage saat tombol Cancel ditekan
+                            Navigator.of(context).pushReplacement(
+                              MaterialPageRoute(builder: (context) => const DashboardPage()),
                             );
                           },
                           style: ElevatedButton.styleFrom(

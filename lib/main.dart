@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:aitunanetra/dashboard_page.dart';
+import 'package:aitunanetra/dashboard_page.dart'; // Import halaman DashboardPage
 
 void main() {
   runApp(const MainApp());
@@ -63,7 +63,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
         // Setelah animasi selesai, navigasi ke halaman login
         Navigator.of(context).pushReplacement(
           PageRouteBuilder(
-            transitionDuration: const Duration(milliseconds: 1500), // Durasi fade in halaman login
+            transitionDuration: const Duration(milliseconds: 500), // Durasi fade in halaman login
             pageBuilder: (context, animation, secondaryAnimation) =>
                 FadeTransition(opacity: animation, child: const LoginPage()), // Halaman login fade in
           ),
@@ -163,9 +163,9 @@ class LoginPage extends StatelessWidget {
                   ),
                   textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 30), // Mengembalikan ke tanpa width
+                const SizedBox(height: 5), // Jarak diubah menjadi 5
                 // TextField Email
-                TextField( // Kembali tanpa SizedBox wrapper untuk width
+                TextField(
                   decoration: InputDecoration(
                     labelText: 'Email',
                     prefixIcon: const Icon(Icons.email),
@@ -189,9 +189,9 @@ class LoginPage extends StatelessWidget {
                     ),
                   ),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 5), // Jarak diubah menjadi 5
                 // TextField Password
-                TextField( // Kembali tanpa SizedBox wrapper untuk width
+                TextField(
                   obscureText: true,
                   decoration: InputDecoration(
                     labelText: 'Password',
@@ -217,9 +217,9 @@ class LoginPage extends StatelessWidget {
                     ),
                   ),
                 ),
-                const SizedBox(height: 30),
+                const SizedBox(height: 5), // Jarak diubah menjadi 5
                 Align(
-                  alignment: Alignment.center,
+                  alignment: Alignment.centerRight,
                   child: TextButton(
                     onPressed: () {
                       // Aksi untuk Forgot Password
@@ -229,18 +229,16 @@ class LoginPage extends StatelessWidget {
                       style: TextStyle(
                         color: Color(0xFF0D0D0D),
                         fontFamily: 'Helvetica',
-                        fontSize: 16,
                       ),
                     ),
                   ),
                 ),
-                const SizedBox(height: 5),
+                const SizedBox(height: 5), // Jarak diubah menjadi 5
                 ElevatedButton(
                   onPressed: () {
-                    // --- BARIS INI YANG DIUBAH ---
-                    // Navigasi ke DashboardPage saat tombol Sign In ditekan
+                    // Pastikan DashboardPage dipanggil dengan loggedInSuccessfully: true
                     Navigator.of(context).pushReplacement(
-                      MaterialPageRoute(builder: (context) => const DashboardPage()),
+                      MaterialPageRoute(builder: (context) => const DashboardPage(loggedInSuccessfully: true)),
                     );
                   },
                   style: ElevatedButton.styleFrom(
