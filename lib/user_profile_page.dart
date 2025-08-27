@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:aitunanetra/dashboard_page.dart'; // Import halaman DashboardPage
+import 'package:aitunanetra/dashboard_page.dart';
 
 class UserProfilePage extends StatelessWidget {
   const UserProfilePage({super.key});
@@ -13,9 +13,9 @@ class UserProfilePage extends StatelessWidget {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Color(0xFFEEF26B), // #EEF26B
-              Color(0xFFEAF207), // #EAF207
-              Color(0xFFEBFF52), // #EBFF52
+              Color(0xFFEEF26B),
+              Color(0xFFEAF207),
+              Color(0xFFEBFF52),
             ],
             stops: [0.25, 0.75, 1.0],
           ),
@@ -37,7 +37,7 @@ class UserProfilePage extends StatelessWidget {
                           backgroundColor: Colors.white, // Background untuk foto
                           child: ClipOval(
                             child: Image.asset(
-                              'assets/ProfileDummy.png', // Path ke foto profil Anda
+                              'assets/ProfileDummy.png',
                               width: 140,
                               height: 140,
                               fit: BoxFit.cover,
@@ -46,7 +46,7 @@ class UserProfilePage extends StatelessWidget {
                                   Icons.account_circle,
                                   size: 140,
                                   color: Colors.grey,
-                                ); // Fallback icon
+                                );
                               },
                             ),
                           ),
@@ -57,7 +57,7 @@ class UserProfilePage extends StatelessWidget {
                           right: 0,
                           child: GestureDetector(
                             onTap: () {
-                              // Aksi untuk mengubah foto profil (saat ini tidak berfungsi)
+                              // Aksi untuk mengubah foto profil (belum berfungsi)
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(content: Text('Tombol ubah foto ditekan')),
                               );
@@ -66,7 +66,7 @@ class UserProfilePage extends StatelessWidget {
                               height: 40,
                               width: 40,
                               decoration: BoxDecoration(
-                                color: const Color(0xFF0D0D0D), // Warna tombol edit diubah ke #0D0D0D
+                                color: const Color(0xFF0D0D0D),
                                 borderRadius: BorderRadius.circular(20),
                                 border: Border.all(color: Colors.white, width: 2),
                               ),
@@ -95,10 +95,10 @@ class UserProfilePage extends StatelessWidget {
                     // TextField Email
                     TextField(
                       controller: TextEditingController(text: 'loremipsum@email.com'), // Dummy email
-                      readOnly: true, // Biarkan read-only untuk saat ini
+                      readOnly: true, //masih read-only
                       decoration: InputDecoration(
                         labelText: 'Email',
-                        prefixIcon: const Icon(Icons.email, color: Color(0xFF0D0D0D)), // Warna ikon diubah ke #0D0D0D
+                        prefixIcon: const Icon(Icons.email, color: Color(0xFF0D0D0D)),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                           borderSide: const BorderSide(width: 2.0),
@@ -117,7 +117,7 @@ class UserProfilePage extends StatelessWidget {
                           fontFamily: 'Helvetica',
                           color: Colors.black54,
                         ),
-                        suffixIcon: IconButton( // Ikon edit di sebelah kanan
+                        suffixIcon: IconButton( //icon button untuk edit email
                           icon: const Icon(Icons.edit, color: Colors.grey),
                           onPressed: () {
                             ScaffoldMessenger.of(context).showSnackBar(
@@ -131,11 +131,11 @@ class UserProfilePage extends StatelessWidget {
                     // TextField Password
                     TextField(
                       controller: TextEditingController(text: '********'), // Dummy password
-                      readOnly: true, // Biarkan read-only untuk saat ini
+                      readOnly: true, // agar read-only
                       obscureText: true,
                       decoration: InputDecoration(
                         labelText: 'Password',
-                        prefixIcon: const Icon(Icons.lock, color: Color(0xFF0D0D0D)), // Warna ikon diubah ke #0D0D0D
+                        prefixIcon: const Icon(Icons.lock, color: Color(0xFF0D0D0D)),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                           borderSide: const BorderSide(width: 2.0),
@@ -154,7 +154,7 @@ class UserProfilePage extends StatelessWidget {
                           fontFamily: 'Helvetica',
                           color: Colors.black54,
                         ),
-                        suffixIcon: IconButton( // Ikon edit di sebelah kanan
+                        suffixIcon: IconButton( // icon button untuk edit password
                           icon: const Icon(Icons.edit, color: Colors.grey),
                           onPressed: () {
                             ScaffoldMessenger.of(context).showSnackBar(
@@ -170,19 +170,17 @@ class UserProfilePage extends StatelessWidget {
                       children: [
                         ElevatedButton(
                           onPressed: () {
-                            // --- BARIS INI YANG DIUBAH ---
-                            // Pindahkan ke DashboardPage saat tombol Cancel ditekan
                             Navigator.of(context).pushReplacement(
                               MaterialPageRoute(builder: (context) => const DashboardPage()),
                             );
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.white, // Warna latar belakang putih
+                            backgroundColor: Colors.white,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
                               side: const BorderSide(
                                   color: Color(0xFF0D0D0D),
-                                  width: 2.0), // Border hitam tebal 2
+                                  width: 2.0),
                             ),
                             padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
                           ),
@@ -190,14 +188,14 @@ class UserProfilePage extends StatelessWidget {
                             'Cancel',
                             style: TextStyle(
                               fontSize: 18,
-                              color: Color(0xFF0D0D0D), // Warna teks hitam
+                              color: Color(0xFF0D0D0D),
                               fontFamily: 'Helvetica',
                             ),
                           ),
                         ),
                         ElevatedButton(
                           onPressed: () {
-                            // Aksi untuk Save! (saat ini tidak berfungsi)
+                            // Aksi untuk Save! (belum berfungsi)
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(content: Text('Tombol Save! ditekan')),
                             );
@@ -224,14 +222,14 @@ class UserProfilePage extends StatelessWidget {
                 ),
               ),
             ),
-            // Tombol Kembali di pojok kiri atas sebagai IconButton sederhana
+            //button untuk back ke dashboard page
             Positioned(
               top: 40,
               left: 20,
               child: IconButton(
-                icon: const Icon(Icons.arrow_back, color: Color(0xFF0D0D0D), size: 30), // Ikon lebih besar dan warna hitam
+                icon: const Icon(Icons.arrow_back, color: Color(0xFF0D0D0D), size: 30),
                 onPressed: () {
-                  Navigator.of(context).pop(); // Kembali ke halaman sebelumnya (Dashboard)
+                  Navigator.of(context).pop(); // Kembali ke halaman sebelumnya (dashboard)
                 },
                 tooltip: 'Kembali',
               ),
