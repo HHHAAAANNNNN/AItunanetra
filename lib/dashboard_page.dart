@@ -3,12 +3,12 @@ import 'package:camera/camera.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:aitunanetra/user_profile_page.dart';
-import 'package:aitunanetra/setting_page.dart'; // Import halaman SettingPage
+import 'package:aitunanetra/setting_page.dart';
 
 class DashboardPage extends StatefulWidget {
-  final bool loggedInSuccessfully; // Tambahkan properti ini
+  final bool loggedInSuccessfully; // cek apakah berhasil login atau tidak
 
-  const DashboardPage({super.key, this.loggedInSuccessfully = false}); // Update konstruktor
+  const DashboardPage({super.key, this.loggedInSuccessfully = false});
 
   @override
   State<DashboardPage> createState() => _DashboardPageState();
@@ -17,11 +17,11 @@ class DashboardPage extends StatefulWidget {
 class _DashboardPageState extends State<DashboardPage> {
   CameraController? _cameraController;
   List<CameraDescription>? _cameras;
-  bool _isFlashOn = false;
-  bool _isMuted = false;
+  bool _isFlashOn = false; //default senter kamera mati
+  bool _isMuted = false; //default text-to-voice menyala
   AudioPlayer _audioPlayer = AudioPlayer();
-  bool _showMenu = false; // State untuk mengontrol visibilitas AnimatedContainer (ukuran box)
-  bool _showMenuItems = false; // State baru untuk mengontrol visibilitas item menu (opacity)
+  bool _showMenu = false; //default menu tertutup
+  bool _showMenuItems = false; //default items di dalam menu belum muncul
 
   @override
   void initState() {
@@ -41,11 +41,11 @@ class _DashboardPageState extends State<DashboardPage> {
 
   // Inisialisasi Audio Player
   void _initAudioPlayer() async {
-    _audioPlayer.setVolume(1.0); // Default volume, akan diubah jika _isMuted true
-    _audioPlayer.setReleaseMode(ReleaseMode.loop);
+    _audioPlayer.setVolume(1.0); // Default volume
+    _audioPlayer.setReleaseMode(ReleaseMode.loop); //looping audio
   }
 
-  // Mengubah status mute/unmute
+  // Mengubah status audio mute/unmute
   void _toggleMute() {
     setState(() {
       _isMuted = !_isMuted;
@@ -60,12 +60,12 @@ class _DashboardPageState extends State<DashboardPage> {
 
   // Inisialisasi Kamera
   Future<void> _initializeCamera() async {
-    var status = await Permission.camera.request();
+    var status = await Permission.camera.request(); //request izin penggunaan kamera
     if (status.isGranted) {
       _cameras = await availableCameras();
       if (_cameras != null && _cameras!.isNotEmpty) {
         _cameraController = CameraController(
-          _cameras![0], // Menggunakan kamera pertama (biasanya belakang)
+          _cameras![0], //default menggunakan kamera 0 (belakang)
           ResolutionPreset.medium,
           enableAudio: false,
         );
@@ -75,7 +75,7 @@ class _DashboardPageState extends State<DashboardPage> {
             return;
           }
           setState(() {});
-        }).catchError((Object e) {
+        }).catchError((Object e) { //error handling jika akses kamera tidak diizinkan
           if (e is CameraException) {
             switch (e.code) {
               case 'CameraAccessDenied':
@@ -95,7 +95,7 @@ class _DashboardPageState extends State<DashboardPage> {
     }
   }
 
-  // Mengubah status flashlight melalui CameraController
+  // error handling jika kamera tidak diizinkan namun senter dinyalakan
   Future<void> _toggleFlashlight() async {
     if (_cameraController == null || !_cameraController!.value.isInitialized) {
       _showMessage('Kamera belum siap.');
@@ -125,6 +125,7 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
+  // dispose berfungsi untuk mematikan animasi ketika aplikasi ditutup
   @override
   void dispose() {
     _cameraController?.dispose();
@@ -163,17 +164,17 @@ class _DashboardPageState extends State<DashboardPage> {
             ),
           ),
 
-          // Tombol di bagian atas kanan (Logo dan menu)
+          //menu di pojok kanan atas
           Positioned(
             top: 40,
             right: 20,
             child: AnimatedContainer(
-              duration: const Duration(milliseconds: 300), // Durasi transisi AnimatedContainer
+              duration: const Duration(milliseconds: 300), // Durasi transisi dibukanya menu
               curve: Curves.easeInOut,
-              width: 50, // Lebar tetap 50
-              height: _showMenu ? 150.0 : 50.0, // Tinggi berubah dari 50 ke 170
+              width: 50,
+              height: _showMenu ? 150.0 : 50.0, //tinggi berubah dari 50 ke 150 jika ditekan
               decoration: BoxDecoration(
-                color: const Color(0xBF818C2E), // Warna #818C2E dengan opacity 75%
+                color: const Color(0xBF818C2E),
                 borderRadius: BorderRadius.circular(_showMenu ? 25.0 : 25.0),
                 boxShadow: [
                   BoxShadow(
@@ -187,22 +188,21 @@ class _DashboardPageState extends State<DashboardPage> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Tombol Logo (selalu terlihat)
                   GestureDetector(
                     onTap: () {
                       setState(() {
-                        _showMenu = !_showMenu; // Mengubah ukuran container
+                        _showMenu = !_showMenu;
                         if (_showMenu) {
-                          // Jika membuka menu, tampilkan item setelah transisi container + 500ms delay
+                          // Jika membuka menu, tampilkan item setelah transisi container
                           Future.delayed(const Duration(milliseconds: 200), () {
-                            if (mounted && _showMenu) { // Pastikan widget masih mounted dan menu masih terbuka
+                            if (mounted && _showMenu) {
                               setState(() {
-                                _showMenuItems = true; // Fade in menu items
+                                _showMenuItems = true;
                               });
                             }
                           });
                         } else {
-                          // Jika menutup menu, sembunyikan item segera
+                          // Jika menutup menu, sembunyikan item
                           setState(() {
                             _showMenuItems = false; // Fade out menu items
                           });
@@ -215,7 +215,7 @@ class _DashboardPageState extends State<DashboardPage> {
                       color: Colors.transparent,
                       child: Center(
                         child: Image.asset(
-                          'assets/logo.png', // Logo Anda
+                          'assets/logo.png',
                           width: 30,
                           height: 30,
                         ),
@@ -225,15 +225,14 @@ class _DashboardPageState extends State<DashboardPage> {
                   // Menu item (Profile & Setting) hanya muncul saat _showMenuItems true
                   if (_showMenu) // Pastikan container sudah membesar sebelum mencoba menampilkan item
                     AnimatedOpacity(
-                      opacity: _showMenuItems ? 1.0 : 0.0, // Dikontrol oleh _showMenuItems
+                      opacity: _showMenuItems ? 1.0 : 0.0,
                       duration: const Duration(milliseconds: 300), // Durasi fade in/out item
                       curve: Curves.easeInOut,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           const SizedBox(height: 1),
-                          // Tombol User Profile sebagai IconButton
-                          IconButton(
+                          IconButton( //icon button profile
                             icon: const Icon(Icons.person, color: Color(0xFF0D0D0D), size: 24),
                             onPressed: () {
                               Navigator.of(context).push(
@@ -242,8 +241,7 @@ class _DashboardPageState extends State<DashboardPage> {
                             },
                             tooltip: 'Profile',
                           ),
-                          // Tombol Setting sebagai IconButton
-                          IconButton(
+                          IconButton( //icon button setting
                             icon: const Icon(Icons.settings, color: Color(0xFF0D0D0D), size: 24),
                             onPressed: () {
                               Navigator.of(context).push(
@@ -260,7 +258,7 @@ class _DashboardPageState extends State<DashboardPage> {
             ),
           ),
 
-          // Tombol di bagian bawah
+          // 3 Tombol di bagian bawah
           Positioned(
             bottom: 40,
             left: 0,
@@ -273,7 +271,7 @@ class _DashboardPageState extends State<DashboardPage> {
                   icon: _isFlashOn ? Icons.flash_on : Icons.flash_off,
                   onPressed: _toggleFlashlight,
                 ),
-                // Tombol Search (tidak berfungsi)
+                // Tombol Search (belum berfungsi)
                 _buildActionButton(
                   icon: Icons.search,
                   onPressed: () {
