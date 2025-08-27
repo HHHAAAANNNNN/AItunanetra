@@ -11,20 +11,21 @@ class SettingPage extends StatefulWidget {
 class _SettingPageState extends State<SettingPage> {
   bool _toggleSetting1 = true;
   bool _toggleSetting2 = false;
-  double _fontSizeOption = 1.0; // 1.0 = Normal, 0.8 = Kecil, 1.2 = Besar
-  double _brightnessValue = 50.0; // 0-100
-  double _textToVoiceSpeed = 1.0; // 0.8 = Lambat, 1.0 = Normal, 1.2 = Cepat
+  double _fontSizeOption = 1.0; // opsi ukuran font (1.0 = Normal, 0.8 = Kecil, 1.2 = Besar)
+  double _brightnessValue = 50.0; // interval kecerahan aplikasi (0-100)
+  double _textToVoiceSpeed = 1.0; // opsi kecepatan output text-to-voice (0.8 = Lambat, 1.0 = Normal, 1.2 = Cepat)
 
   // Controllers untuk TextField
   final TextEditingController _toggleTextController1 = TextEditingController(text: 'Lorem ipsum dolor sit amet.');
   final TextEditingController _toggleTextController2 = TextEditingController(text: 'Lorem ipsum dolor sit amet.');
 
-  // Warna default
+  // Warna default aplikasi
   Color _bgColor1 = const Color(0xFFEEF26B);
   Color _bgColor2 = const Color(0xFFEAF207);
   Color _bgColor3 = const Color(0xFFEBFF52);
   Color _textColor = const Color(0xFF0D0D0D);
 
+  // dispose berfungsi untuk mematikan animasi ketika aplikasi ditutup
   @override
   void dispose() {
     _toggleTextController1.dispose();
@@ -36,7 +37,7 @@ class _SettingPageState extends State<SettingPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: BoxDecoration(
+        decoration: BoxDecoration( //warna background
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
@@ -56,7 +57,7 @@ class _SettingPageState extends State<SettingPage> {
                     Icon(
                       Icons.settings,
                       size: 100,
-                      color: _textColor, // Ikon setting menggunakan warna teks dinamis
+                      color: _textColor,
                     ),
                     const SizedBox(height: 10),
                     Text(
@@ -64,7 +65,7 @@ class _SettingPageState extends State<SettingPage> {
                       style: TextStyle(
                         fontSize: 32,
                         fontWeight: FontWeight.bold,
-                        color: _textColor, // Warna teks dinamis
+                        color: _textColor,
                         fontFamily: 'Helvetica',
                       ),
                       textAlign: TextAlign.center,
@@ -80,7 +81,7 @@ class _SettingPageState extends State<SettingPage> {
                           _toggleSetting1 = value!;
                         });
                       },
-                      _textColor, // Meneruskan warna teks
+                      _textColor,
                     ),
                     const SizedBox(height: 10),
                     _buildToggleSetting(
@@ -91,21 +92,21 @@ class _SettingPageState extends State<SettingPage> {
                           _toggleSetting2 = value!;
                         });
                       },
-                      _textColor, // Meneruskan warna teks
+                      _textColor,
                     ),
                     const SizedBox(height: 10),
 
                     // Font Size Setting
                     Row(
                       children: [
-                        Image.asset('assets/text_fields.png', width: 24, height: 24, color: _textColor), // Ikon untuk ukuran font
+                        Image.asset('assets/text_fields.png', width: 24, height: 24, color: _textColor),
                         const SizedBox(width: 8),
                         Expanded(
                           child: Slider(
                             value: _fontSizeOption,
                             min: 0.8,
                             max: 1.2,
-                            divisions: 2, // 3 opsi: 0.8, 1.0, 1.2
+                            divisions: 2, // dari 3 opsi yang diberikan, memilih opsi yang mana
                             label: _fontSizeOption == 0.8
                                 ? 'Kecil'
                                 : (_fontSizeOption == 1.0 ? 'Normal' : 'Besar'),
@@ -125,7 +126,7 @@ class _SettingPageState extends State<SettingPage> {
                     // Brightness Setting
                     Row(
                       children: [
-                        Image.asset('assets/sun.png', width: 24, height: 24, color: _textColor), // Ikon untuk kecerahan
+                        Image.asset('assets/sun.png', width: 24, height: 24, color: _textColor),
                         const SizedBox(width: 8),
                         Expanded(
                           child: Slider(
@@ -150,14 +151,14 @@ class _SettingPageState extends State<SettingPage> {
                     // Text-to-Voice Speed Setting
                     Row(
                       children: [
-                        Icon(Icons.volume_up, size: 24, color: _textColor), // Ikon suara (dipindahkan ke kiri)
+                        Icon(Icons.volume_up, size: 24, color: _textColor),
                         const SizedBox(width: 8),
                         Expanded(
                           child: Slider(
                             value: _textToVoiceSpeed,
                             min: 0.8,
                             max: 1.2,
-                            divisions: 2, // 3 opsi: 0.8, 1.0, 1.2
+                            divisions: 2, // dari 3 opsi, dipilih opsi kedua
                             label: _textToVoiceSpeed == 0.8
                                 ? 'Lambat'
                                 : (_textToVoiceSpeed == 1.0 ? 'Normal' : 'Cepat'),
@@ -174,7 +175,7 @@ class _SettingPageState extends State<SettingPage> {
                     ),
                     const SizedBox(height: 10),
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.center, // Ubah ke center untuk menempatkan fitur di tengah
+                      mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Column( // Kolom untuk ikon Randomize dan Reset
@@ -184,7 +185,7 @@ class _SettingPageState extends State<SettingPage> {
                               icon: const Icon(Icons.shuffle, color: Color(0xFF0D0D0D), size: 30), // Ikon Randomize
                               onPressed: () {
                                 setState(() {
-                                  _randomizeColors();
+                                  _randomizeColors(); //jika ditekan, maka akan random warna
                                 });
                               },
                               tooltip: 'Randomize Colors',
@@ -194,19 +195,19 @@ class _SettingPageState extends State<SettingPage> {
                               icon: const Icon(Icons.refresh, color: Color(0xFF0D0D0D), size: 30), // Ikon Reset
                               onPressed: () {
                                 setState(() {
-                                  _resetColors();
+                                  _resetColors(); //jika ditekan, maka kembali ke set warna default
                                 });
                               },
                               tooltip: 'Reset Colors',
                             ),
                           ],
                         ),
-                        const SizedBox(width: 15), // Jarak antara ikon dan preview box
+                        const SizedBox(width: 15),
 
-                        // Preview Warna Utama (sekarang sebagai satu box)
+                        // Preview Warna Utama
                         Container(
-                          width: 80, // Lebar yang lebih besar untuk preview
-                          height: 80, // Tinggi yang lebih besar
+                          width: 80,
+                          height: 80,
                           decoration: BoxDecoration(
                             gradient: LinearGradient(
                               begin: Alignment.topLeft,
@@ -218,14 +219,13 @@ class _SettingPageState extends State<SettingPage> {
                           ),
                           child: Center(
                             child: Text(
-                              'Aa', // Contoh teks di tengah
+                              'Aa', // Contoh teks di tengah box preview
                               style: TextStyle(fontSize: 24, color: _textColor, fontFamily: 'Helvetica'),
                             ),
                           ),
                         ),
-                        const SizedBox(width: 15), // Jarak antara preview box dan kode warna
+                        const SizedBox(width: 15),
 
-                        // Kolom untuk Kode Warna
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisSize: MainAxisSize.min,
@@ -248,14 +248,12 @@ class _SettingPageState extends State<SettingPage> {
                     ),
                     const SizedBox(height: 20),
 
-                    // Cancel and Save Buttons
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
                         ElevatedButton(
                           onPressed: () {
-                            // Aksi untuk Cancel (saat ini tidak berfungsi)
-                            Navigator.of(context).pop(); // Kembali ke halaman sebelumnya
+                            Navigator.of(context).pop(); // Kembali ke halaman sebelumnya (dashboard)
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.white,
@@ -276,11 +274,10 @@ class _SettingPageState extends State<SettingPage> {
                         ),
                         ElevatedButton(
                           onPressed: () {
-                            // Aksi untuk Save! (saat ini tidak berfungsi)
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(content: Text('Pengaturan disimpan!')),
                             );
-                            Navigator.of(context).pop(); // Kembali ke halaman sebelumnya
+                            Navigator.of(context).pop(); // Kembali ke halaman sebelumnya (dashboard)
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF0D0D0D),
@@ -304,7 +301,7 @@ class _SettingPageState extends State<SettingPage> {
                 ),
               ),
             ),
-            // Tombol Kembali di pojok kiri atas
+            //tombol back
             Positioned(
               top: 40,
               left: 20,
@@ -330,8 +327,8 @@ class _SettingPageState extends State<SettingPage> {
         Expanded(
           child: TextField(
             controller: controller,
-            readOnly: true, // TextField hanya untuk tampilan dummy
-            style: TextStyle( // Gaya teks di dalam TextField
+            readOnly: true,
+            style: TextStyle(
               fontSize: 16,
               color: textColor,
               fontFamily: 'Helvetica',
@@ -343,24 +340,23 @@ class _SettingPageState extends State<SettingPage> {
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(width: 2.0, color: textColor), // Warna border focused
+                borderSide: BorderSide(width: 2.0, color: textColor),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(width: 2.0, color: textColor), // Warna border enabled
+                borderSide: BorderSide(width: 2.0, color: textColor),
               ),
               filled: true,
               fillColor: Colors.white.withOpacity(0.8),
-              // labelStyle tidak diperlukan karena tidak ada labelText
             ),
           ),
         ),
-        const SizedBox(width: 10), // Jarak antara TextField dan Checkbox
+        const SizedBox(width: 10),
         Checkbox(
           value: value,
           onChanged: onChanged,
           activeColor: textColor,
-          checkColor: _bgColor3, // Warna ceklis
+          checkColor: _bgColor3,
         ),
       ],
     );
