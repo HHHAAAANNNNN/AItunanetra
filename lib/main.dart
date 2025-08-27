@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:aitunanetra/dashboard_page.dart'; // Import halaman DashboardPage
+import 'package:aitunanetra/dashboard_page.dart';
 
 void main() {
   runApp(const MainApp());
 }
 
-// Halaman utama aplikasi
 class MainApp extends StatelessWidget {
   const MainApp({super.key});
 
@@ -14,17 +13,16 @@ class MainApp extends StatelessWidget {
     return MaterialApp(
       title: 'Aplikasi Login',
       theme: ThemeData(
-        // Mengatur fontFamily secara global untuk semua TextStyle yang tidak menimpanya
-        fontFamily: 'Helvetica',
+        fontFamily: 'Helvetica', // aplikasi mobile cenderung menggunakan Helvetica
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: const SplashScreen(), // Mulai dengan SplashScreen
+      home: const SplashScreen(),
     );
   }
 }
 
-// SplashScreen (Halaman Loading Awal)
+// Dimulai dari splashscreen agar lebih nyaman penggunaan
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
@@ -34,9 +32,8 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
-  late Animation<double> _logoFadeAnimation; // Animasi fade out logo
+  late Animation<double> _logoFadeAnimation;
 
-  // Ukuran logo di splash screen (tidak lagi dianimasikan ukurannya)
   final double _initialLogoWidth = 155.0;
   final double _initialLogoHeight = 135.0;
 
@@ -44,34 +41,33 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   void initState() {
     super.initState();
     _controller = AnimationController(
-      duration: const Duration(milliseconds: 1500), // Total durasi: 1 detik jeda + 0.5 detik fade out
+      duration: const Duration(milliseconds: 1500), //animasi splashscreen ke login screen berlangsung 1,5 detik
       vsync: this,
     );
 
-    // Animasi fade out logo: Mulai setelah 1 detik (1000ms), berakhir pada 1.5 detik (1500ms)
-    _logoFadeAnimation = Tween<double>(begin: 1.0, end: 0.0).animate(
+    _logoFadeAnimation = Tween<double>(begin: 1.0, end: 0.0).animate( //animasi dimulai di detik 1, berakhir di detik 0
       CurvedAnimation(
         parent: _controller,
-        curve: const Interval(1000 / 1500, 1.0, curve: Curves.easeOut), // Fade mulai pada 1 detik, selesai pada 1.5 detik
+        curve: const Interval(1000 / 1500, 1.0, curve: Curves.easeOut), //animasi berupa fade out
       ),
     );
 
-    _controller.forward(); // Mulai animasi
+    _controller.forward();
 
     _controller.addStatusListener((status) {
-      if (status == AnimationStatus.completed) {
-        // Setelah animasi selesai, navigasi ke halaman login
+      if (status == AnimationStatus.completed) { //kalau animasi selesai, start animasi login screen
         Navigator.of(context).pushReplacement(
           PageRouteBuilder(
-            transitionDuration: const Duration(milliseconds: 500), // Durasi fade in halaman login
+            transitionDuration: const Duration(milliseconds: 500), //durasi animasi login screen 0.5 detik
             pageBuilder: (context, animation, secondaryAnimation) =>
-                FadeTransition(opacity: animation, child: const LoginPage()), // Halaman login fade in
+                FadeTransition(opacity: animation, child: const LoginPage()),
           ),
         );
       }
     });
   }
 
+  // dispose berfungsi untuk mematikan animasi ketika aplikasi ditutup
   @override
   void dispose() {
     _controller.dispose();
@@ -82,28 +78,27 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
+        decoration: const BoxDecoration( //background aplikasi
+          gradient: LinearGradient( //gradient background aplikasi
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Color(0xFFEEF26B), // #EEF26B
-              Color(0xFFEAF207), // #EAF207
-              Color(0xFFEBFF52), // #EBFF52
+              Color(0xFFEEF26B),
+              Color(0xFFEAF207),
+              Color(0xFFEBFF52),
             ],
             stops: [0.25, 0.75, 1.0],
           ),
         ),
         child: Center(
-          // AnimatedBuilder digunakan untuk menerapkan animasi opacity pada logo
           child: AnimatedBuilder(
             animation: _controller,
             builder: (context, child) {
               return Opacity(
                 opacity: _logoFadeAnimation.value,
                 child: Image.asset(
-                  'assets/logo.png', // Pastikan Anda memiliki file 'logo.png' di folder 'assets'
-                  width: _initialLogoWidth, // Ukuran logo tetap
+                  'assets/logo.png',
+                  width: _initialLogoWidth,
                   height: _initialLogoHeight,
                 ),
               );
@@ -115,11 +110,10 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   }
 }
 
-// LoginPage (Halaman Login)
 class LoginPage extends StatelessWidget {
   const LoginPage({super.key});
 
-  // Ukuran logo di halaman login
+  // logo pada login screen berakhir di ukuran berikut
   final double _logoWidth = 102.0;
   final double _logoHeight = 89.0;
 
@@ -132,9 +126,9 @@ class LoginPage extends StatelessWidget {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Color(0xFFEEF26B), // #EEF26B
-              Color(0xFFEAF207), // #EAF207
-              Color(0xFFEBFF52), // #EBFF52
+              Color(0xFFEEF26B),
+              Color(0xFFEAF207),
+              Color(0xFFEBFF52),
             ],
             stops: [0.25, 0.75, 1.0],
           ),
@@ -146,10 +140,9 @@ class LoginPage extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: <Widget>[
-                // Logo di bagian atas halaman login
                 Image.asset(
-                  'assets/logo.png', // Pastikan Anda memiliki file 'logo.png' di folder 'assets'
-                  width: _logoWidth, // Ukuran logo di halaman login
+                  'assets/logo.png',
+                  width: _logoWidth,
                   height: _logoHeight,
                 ),
                 const SizedBox(height: 50),
@@ -158,13 +151,12 @@ class LoginPage extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 36,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF0D0D0D), // Warna teks diubah ke #0D0D0D
-                    fontFamily: 'Helvetica', // Font diubah ke Helvetica
+                    color: Color(0xFF0D0D0D),
+                    fontFamily: 'Helvetica',
                   ),
                   textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 5), // Jarak diubah menjadi 5
-                // TextField Email
+                const SizedBox(height: 5),
                 TextField(
                   decoration: InputDecoration(
                     labelText: 'Email',
@@ -185,12 +177,11 @@ class LoginPage extends StatelessWidget {
                     fillColor: Colors.white.withOpacity(0.8),
                     labelStyle: const TextStyle(
                       fontFamily: 'Helvetica',
-                      color: Colors.black54,
+                      color: Color(0xFF0d0d0d),
                     ),
                   ),
                 ),
-                const SizedBox(height: 5), // Jarak diubah menjadi 5
-                // TextField Password
+                const SizedBox(height: 5),
                 TextField(
                   obscureText: true,
                   decoration: InputDecoration(
@@ -213,16 +204,16 @@ class LoginPage extends StatelessWidget {
                     fillColor: Colors.white.withOpacity(0.8),
                     labelStyle: const TextStyle(
                       fontFamily: 'Helvetica',
-                      color: Colors.black54,
+                      color: Color(0xFF0d0d0d),
                     ),
                   ),
                 ),
-                const SizedBox(height: 5), // Jarak diubah menjadi 5
+                const SizedBox(height: 5),
                 Align(
                   alignment: Alignment.centerRight,
                   child: TextButton(
                     onPressed: () {
-                      // Aksi untuk Forgot Password
+                      //tombol 'Forgot Password' masih belum berfungsi
                     },
                     child: const Text(
                       'Forgot password?',
@@ -233,10 +224,9 @@ class LoginPage extends StatelessWidget {
                     ),
                   ),
                 ),
-                const SizedBox(height: 5), // Jarak diubah menjadi 5
+                const SizedBox(height: 5),
                 ElevatedButton(
                   onPressed: () {
-                    // Pastikan DashboardPage dipanggil dengan loggedInSuccessfully: true
                     Navigator.of(context).pushReplacement(
                       MaterialPageRoute(builder: (context) => const DashboardPage(loggedInSuccessfully: true)),
                     );
