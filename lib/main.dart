@@ -1,7 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:aitunanetra/dashboard_page.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  // Set fullscreen mode - hide status bar and navigation bar
+  SystemChrome.setEnabledSystemUIMode(
+    SystemUiMode.immersiveSticky,
+    overlays: [],
+  );
+  
+  // Set preferred orientations (optional - lock to portrait)
+  SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
+  
   runApp(const MainApp());
 }
 
@@ -110,12 +126,42 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   }
 }
 
-class LoginPage extends StatelessWidget {
+class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
+
+  @override
+  State<LoginPage> createState() => _LoginPageState();
+}
+
+class _LoginPageState extends State<LoginPage> {
+  final FlutterTts flutterTts = FlutterTts();
 
   // logo pada login screen berakhir di ukuran berikut
   final double _logoWidth = 102.0;
   final double _logoHeight = 89.0;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeTts();
+  }
+
+  // Initialize TTS with Indonesian language settings
+  Future<void> _initializeTts() async {
+    await flutterTts.setLanguage("id-ID"); // Indonesian
+    await flutterTts.setSpeechRate(0.5); // Speed (0.5 = slower, good for accessibility)
+    await flutterTts.setVolume(1.0); // Volume
+    await flutterTts.setPitch(1.0); // Pitch
+    
+    // Play welcome message
+    await flutterTts.speak("Selamat datang di AI Tunanetra. By Any Chance, if my audio sounds weird then I'm unable to talk in English.");
+  }
+
+  @override
+  void dispose() {
+    flutterTts.stop();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {

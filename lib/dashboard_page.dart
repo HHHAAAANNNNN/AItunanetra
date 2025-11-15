@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:camera/camera.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 import 'package:aitunanetra/user_profile_page.dart';
 import 'package:aitunanetra/setting_page.dart';
 
@@ -20,14 +22,24 @@ class _DashboardPageState extends State<DashboardPage> {
   bool _isFlashOn = false; //default senter kamera mati
   bool _isMuted = false; //default text-to-voice menyala
   AudioPlayer _audioPlayer = AudioPlayer();
+  FlutterTts flutterTts = FlutterTts();
   bool _showMenu = false; //default menu tertutup
   bool _showMenuItems = false; //default items di dalam menu belum muncul
+  DateTime? _lastBackPressed; //untuk tracking double tap back button
 
   @override
   void initState() {
     super.initState();
+    
+    // Ensure fullscreen mode is maintained
+    SystemChrome.setEnabledSystemUIMode(
+      SystemUiMode.immersiveSticky,
+      overlays: [],
+    );
+    
     _initializeCamera();
     _initAudioPlayer();
+    _initializeTts();
 
     // Tampilkan notifikasi jika berhasil login
     if (widget.loggedInSuccessfully) {
@@ -37,6 +49,14 @@ class _DashboardPageState extends State<DashboardPage> {
         );
       });
     }
+  }
+
+  // Inisialisasi TTS untuk back button warning
+  Future<void> _initializeTts() async {
+    await flutterTts.setLanguage("id-ID"); // Indonesian
+    await flutterTts.setSpeechRate(0.6); // Sedikit lebih cepat dari default
+    await flutterTts.setVolume(1.0); // Volume
+    await flutterTts.setPitch(1.0); // Pitch
   }
 
   // Inisialisasi Audio Player
@@ -130,7 +150,30 @@ class _DashboardPageState extends State<DashboardPage> {
   void dispose() {
     _cameraController?.dispose();
     _audioPlayer.dispose();
+    flutterTts.stop();
     super.dispose();
+  }
+
+  // Handle back button press
+  Future<bool> _onWillPop() async {
+    final now = DateTime.now();
+    final backButtonHasNotBeenPressedOrSnackBarHasBeenClosed =
+        _lastBackPressed == null ||
+            now.difference(_lastBackPressed!) > const Duration(seconds: 3);
+
+    if (backButtonHasNotBeenPressedOrSnackBarHasBeenClosed) {
+      _lastBackPressed = now;
+      
+      // Play TTS warning
+      await flutterTts.speak(
+          "Anda menekan tombol back pada ponsel. Tekan sekali lagi untuk keluar dari aplikasi");
+      
+      _showMessage('Tekan sekali lagi untuk keluar');
+      
+      return false; // Don't exit yet
+    }
+    
+    return true; // Exit the app
   }
 
   @override
@@ -153,7 +196,17 @@ class _DashboardPageState extends State<DashboardPage> {
       );
     }
 
-    return Scaffold(
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return;
+        
+        final shouldPop = await _onWillPop();
+        if (shouldPop && context.mounted) {
+          Navigator.of(context).pop();
+        }
+      },
+      child: Scaffold(
       body: Stack(
         children: [
           // Background Kamera
@@ -287,6 +340,7 @@ class _DashboardPageState extends State<DashboardPage> {
             ),
           ),
         ],
+      ),
       ),
     );
   }

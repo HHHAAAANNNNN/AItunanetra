@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'dart:math'; // Untuk fungsi random
 
 class SettingPage extends StatefulWidget {
@@ -24,6 +25,17 @@ class _SettingPageState extends State<SettingPage> {
   Color _bgColor2 = const Color(0xFFEAF207);
   Color _bgColor3 = const Color(0xFFEBFF52);
   Color _textColor = const Color(0xFF0D0D0D);
+
+  @override
+  void initState() {
+    super.initState();
+    
+    // Maintain fullscreen mode
+    SystemChrome.setEnabledSystemUIMode(
+      SystemUiMode.immersiveSticky,
+      overlays: [],
+    );
+  }
 
   // dispose berfungsi untuk mematikan animasi ketika aplikasi ditutup
   @override
