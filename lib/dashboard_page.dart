@@ -27,7 +27,8 @@ class _DashboardPageState extends State<DashboardPage> {
   bool _showMenu = false; //default menu tertutup
   bool _showMenuItems = false; //default items di dalam menu belum muncul
   DateTime? _lastBackPressed; //untuk tracking double tap back button
-  double _subtitleBoxHeight = 0.25; // Rasio tinggi subtitle box (default 1/4 untuk rasio 3:1)
+  double _subtitleBoxHeight = 0.18; // Rasio tinggi subtitle box (default lebih kecil ~18%)
+  bool _animateSubtitle = true; // Flag untuk mengontrol apakah perlu animasi atau tidak
 
   @override
   void initState() {
@@ -87,6 +88,7 @@ class _DashboardPageState extends State<DashboardPage> {
   // Toggle subtitle on/off
   void _toggleSubtitle() {
     setState(() {
+      _animateSubtitle = true; // Aktifkan animasi saat button ditekan
       _isSubtitleOn = !_isSubtitleOn;
     });
     _playButtonFeedback(_isSubtitleOn ? 'Subtitle hidup' : 'Subtitle mati');
@@ -223,21 +225,26 @@ class _DashboardPageState extends State<DashboardPage> {
       child: Scaffold(
       body: Stack(
         children: [
-          // Background Kamera dengan layout dinamis
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: _isSubtitleOn 
-                ? MediaQuery.of(context).size.height * _subtitleBoxHeight 
-                : 0,
-            child: AspectRatio(
-              aspectRatio: _cameraController!.value.aspectRatio,
-              child: CameraPreview(_cameraController!),
+          // Background Kamera - Fullscreen tanpa perubahan resolusi
+          // Dengan GestureDetector untuk double-tap dan long press
+          Positioned.fill(
+            child: GestureDetector(
+              onDoubleTap: () {
+                // Double tap untuk toggle flashlight
+                _toggleFlashlight();
+              },
+              onLongPress: () {
+                // Long press untuk toggle mikrofon
+                _toggleMic();
+              },
+              child: AspectRatio(
+                aspectRatio: _cameraController!.value.aspectRatio,
+                child: CameraPreview(_cameraController!),
+              ),
             ),
           ),
 
-          // Subtitle Box (hanya tampil jika _isSubtitleOn = true)
+          // Subtitle Box - Overlay di depan kamera, hanya tampil jika ON
           if (_isSubtitleOn)
             Positioned(
               bottom: 0,
@@ -248,23 +255,25 @@ class _DashboardPageState extends State<DashboardPage> {
                 children: [
                   // Drag handle untuk mengubah ukuran
                   GestureDetector(
+                    onVerticalDragStart: (details) {
+                      // Nonaktifkan animasi saat mulai drag
+                      setState(() {
+                        _animateSubtitle = false;
+                      });
+                    },
                     onVerticalDragUpdate: (details) {
                       setState(() {
-                        // Update height berdasarkan drag
+                        // Update height berdasarkan drag tanpa animasi
                         double newHeight = _subtitleBoxHeight - 
                             (details.delta.dy / MediaQuery.of(context).size.height);
-                        // Batasi antara 0.15 (minimum) dan 0.6 (maximum)
-                        _subtitleBoxHeight = newHeight.clamp(0.15, 0.6);
+                        // Batasi antara 0.12 (minimum) dan 0.6 (maximum)
+                        _subtitleBoxHeight = newHeight.clamp(0.12, 0.6);
                       });
                     },
                     child: Container(
                       height: 30,
-                      decoration: BoxDecoration(
-                        color: const Color(0xBF818C2E),
-                        borderRadius: const BorderRadius.only(
-                          topLeft: Radius.circular(20),
-                          topRight: Radius.circular(20),
-                        ),
+                      decoration: const BoxDecoration(
+                        color: Color(0xBF818C2E),
                       ),
                       child: Center(
                         child: Container(
@@ -298,10 +307,10 @@ class _DashboardPageState extends State<DashboardPage> {
                         child: SingleChildScrollView(
                           child: Text(
                             'Subtitle akan muncul di sini...',
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
-                              color: const Color(0xFF0D0D0D),
+                              color: Color(0xFF0D0D0D),
                               fontFamily: 'Helvetica',
                             ),
                             textAlign: TextAlign.center,
@@ -408,30 +417,22 @@ class _DashboardPageState extends State<DashboardPage> {
             ),
           ),
 
-          // 3 Tombol di bagian bawah
-          Positioned(
-            bottom: 40,
+          // Tombol Subtitle di bagian bawah tengah - bergeser ke atas saat subtitle aktif
+          AnimatedPositioned(
+            duration: _animateSubtitle 
+                ? const Duration(milliseconds: 400) // Animasi saat button ditekan
+                : Duration.zero, // Tidak ada animasi saat drag manual
+            curve: Curves.easeInOut,
+            bottom: _isSubtitleOn 
+                ? (MediaQuery.of(context).size.height * _subtitleBoxHeight) + 20 // 20px di atas subtitle box
+                : 40, // Posisi default
             left: 0,
             right: 0,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                // Tombol Senter
-                _buildActionButton(
-                  icon: _isFlashOn ? Icons.flash_on : Icons.flash_off,
-                  onPressed: _toggleFlashlight,
-                ),
-                // Tombol Subtitle (toggle subtitle box)
-                _buildActionButton(
-                  icon: _isSubtitleOn ? Icons.subtitles : Icons.subtitles_outlined,
-                  onPressed: _toggleSubtitle,
-                ),
-                // Tombol Mikrofon
-                _buildActionButton(
-                  icon: _isMicOn ? Icons.mic : Icons.mic_off,
-                  onPressed: _toggleMic,
-                ),
-              ],
+            child: Center(
+              child: _buildActionButton(
+                icon: _isSubtitleOn ? Icons.subtitles : Icons.subtitles_outlined,
+                onPressed: _toggleSubtitle,
+              ),
             ),
           ),
         ],

@@ -149,7 +149,7 @@ class _LoginPageState extends State<LoginPage> {
   // Initialize TTS with Indonesian language settings
   Future<void> _initializeTts() async {
     await flutterTts.setLanguage("id-ID"); // Indonesian
-    await flutterTts.setSpeechRate(0.5); // Speed (0.5 = slower, good for accessibility)
+    await flutterTts.setSpeechRate(0.6); // Speed (0.5 = slower, good for accessibility)
     await flutterTts.setVolume(1.0); // Volume
     await flutterTts.setPitch(1.0); // Pitch
     
