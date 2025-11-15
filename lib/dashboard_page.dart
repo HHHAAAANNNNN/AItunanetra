@@ -20,12 +20,14 @@ class _DashboardPageState extends State<DashboardPage> {
   CameraController? _cameraController;
   List<CameraDescription>? _cameras;
   bool _isFlashOn = false; //default senter kamera mati
-  bool _isMuted = false; //default text-to-voice menyala
+  bool _isMicOn = false; //default mikrofon mati
+  bool _isSubtitleOn = false; //default subtitle mati
   AudioPlayer _audioPlayer = AudioPlayer();
   FlutterTts flutterTts = FlutterTts();
   bool _showMenu = false; //default menu tertutup
   bool _showMenuItems = false; //default items di dalam menu belum muncul
   DateTime? _lastBackPressed; //untuk tracking double tap back button
+  double _subtitleBoxHeight = 0.25; // Rasio tinggi subtitle box (default 1/4 untuk rasio 3:1)
 
   @override
   void initState() {
@@ -65,17 +67,29 @@ class _DashboardPageState extends State<DashboardPage> {
     _audioPlayer.setReleaseMode(ReleaseMode.loop); //looping audio
   }
 
-  // Mengubah status audio mute/unmute
-  void _toggleMute() {
+  // Play audio feedback untuk button actions (cepat dan singkat)
+  Future<void> _playButtonFeedback(String message) async {
+    await flutterTts.setLanguage("id-ID");
+    await flutterTts.setSpeechRate(0.8); // Lebih cepat untuk feedback
+    await flutterTts.setVolume(1.0);
+    await flutterTts.setPitch(1.0);
+    await flutterTts.speak(message);
+  }
+
+  // Toggle mikrofon on/off (dummy untuk fitur berikutnya)
+  void _toggleMic() {
     setState(() {
-      _isMuted = !_isMuted;
-      if (_isMuted) {
-        _audioPlayer.setVolume(0.0);
-      } else {
-        _audioPlayer.setVolume(1.0);
-      }
+      _isMicOn = !_isMicOn;
     });
-    _showMessage(_isMuted ? 'Suara Dimatikan' : 'Suara Dihidupkan');
+    _playButtonFeedback(_isMicOn ? 'Mikrofon hidup' : 'Mikrofon mati');
+  }
+
+  // Toggle subtitle on/off
+  void _toggleSubtitle() {
+    setState(() {
+      _isSubtitleOn = !_isSubtitleOn;
+    });
+    _playButtonFeedback(_isSubtitleOn ? 'Subtitle hidup' : 'Subtitle mati');
   }
 
   // Inisialisasi Kamera
@@ -118,23 +132,23 @@ class _DashboardPageState extends State<DashboardPage> {
   // error handling jika kamera tidak diizinkan namun senter dinyalakan
   Future<void> _toggleFlashlight() async {
     if (_cameraController == null || !_cameraController!.value.isInitialized) {
-      _showMessage('Kamera belum siap.');
+      _playButtonFeedback('Kamera belum siap');
       return;
     }
 
     try {
       if (_isFlashOn) {
         await _cameraController!.setFlashMode(FlashMode.off);
-        _showMessage('Flashlight Dimatikan');
+        _playButtonFeedback('Senter mati');
       } else {
         await _cameraController!.setFlashMode(FlashMode.torch);
-        _showMessage('Flashlight Dinyalakan');
+        _playButtonFeedback('Senter hidup');
       }
       setState(() {
         _isFlashOn = !_isFlashOn;
       });
     } on CameraException catch (e) {
-      _showMessage('Gagal mengontrol flashlight: ${e.description}');
+      _playButtonFeedback('Gagal mengontrol senter');
     }
   }
 
@@ -165,7 +179,7 @@ class _DashboardPageState extends State<DashboardPage> {
       _lastBackPressed = now;
       
       // Play TTS warning
-      await flutterTts.speak(
+      flutterTts.speak(
           "Anda menekan tombol back pada ponsel. Tekan sekali lagi untuk keluar dari aplikasi");
       
       _showMessage('Tekan sekali lagi untuk keluar');
@@ -173,7 +187,9 @@ class _DashboardPageState extends State<DashboardPage> {
       return false; // Don't exit yet
     }
     
-    return true; // Exit the app
+    // Exit dari aplikasi menggunakan SystemNavigator
+    SystemNavigator.pop();
+    return false; // Return false karena SystemNavigator.pop() sudah handle exit
   }
 
   @override
@@ -201,21 +217,102 @@ class _DashboardPageState extends State<DashboardPage> {
       onPopInvokedWithResult: (didPop, result) async {
         if (didPop) return;
         
-        final shouldPop = await _onWillPop();
-        if (shouldPop && context.mounted) {
-          Navigator.of(context).pop();
-        }
+        // Panggil fungsi _onWillPop yang akan handle exit
+        await _onWillPop();
       },
       child: Scaffold(
       body: Stack(
         children: [
-          // Background Kamera
-          Positioned.fill(
+          // Background Kamera dengan layout dinamis
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: _isSubtitleOn 
+                ? MediaQuery.of(context).size.height * _subtitleBoxHeight 
+                : 0,
             child: AspectRatio(
               aspectRatio: _cameraController!.value.aspectRatio,
               child: CameraPreview(_cameraController!),
             ),
           ),
+
+          // Subtitle Box (hanya tampil jika _isSubtitleOn = true)
+          if (_isSubtitleOn)
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              height: MediaQuery.of(context).size.height * _subtitleBoxHeight,
+              child: Column(
+                children: [
+                  // Drag handle untuk mengubah ukuran
+                  GestureDetector(
+                    onVerticalDragUpdate: (details) {
+                      setState(() {
+                        // Update height berdasarkan drag
+                        double newHeight = _subtitleBoxHeight - 
+                            (details.delta.dy / MediaQuery.of(context).size.height);
+                        // Batasi antara 0.15 (minimum) dan 0.6 (maximum)
+                        _subtitleBoxHeight = newHeight.clamp(0.15, 0.6);
+                      });
+                    },
+                    child: Container(
+                      height: 30,
+                      decoration: BoxDecoration(
+                        color: const Color(0xBF818C2E),
+                        borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(20),
+                          topRight: Radius.circular(20),
+                        ),
+                      ),
+                      child: Center(
+                        child: Container(
+                          width: 40,
+                          height: 4,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF0D0D0D),
+                            borderRadius: BorderRadius.circular(2),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  // Subtitle content box
+                  Expanded(
+                    child: Container(
+                      decoration: const BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Color(0xFFEEF26B),
+                            Color(0xFFEAF207),
+                            Color(0xFFEBFF52),
+                          ],
+                          stops: [0.25, 0.75, 1.0],
+                        ),
+                      ),
+                      padding: const EdgeInsets.all(16.0),
+                      child: Center(
+                        child: SingleChildScrollView(
+                          child: Text(
+                            'Subtitle akan muncul di sini...',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: const Color(0xFF0D0D0D),
+                              fontFamily: 'Helvetica',
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
 
           //menu di pojok kanan atas
           Positioned(
@@ -324,17 +421,15 @@ class _DashboardPageState extends State<DashboardPage> {
                   icon: _isFlashOn ? Icons.flash_on : Icons.flash_off,
                   onPressed: _toggleFlashlight,
                 ),
-                // Tombol Search (belum berfungsi)
+                // Tombol Subtitle (toggle subtitle box)
                 _buildActionButton(
-                  icon: Icons.search,
-                  onPressed: () {
-                    _showMessage('Tombol Search ditekan (tidak berfungsi)');
-                  },
+                  icon: _isSubtitleOn ? Icons.subtitles : Icons.subtitles_outlined,
+                  onPressed: _toggleSubtitle,
                 ),
-                // Tombol Suara
+                // Tombol Mikrofon
                 _buildActionButton(
-                  icon: _isMuted ? Icons.volume_off : Icons.volume_up,
-                  onPressed: _toggleMute,
+                  icon: _isMicOn ? Icons.mic : Icons.mic_off,
+                  onPressed: _toggleMic,
                 ),
               ],
             ),
