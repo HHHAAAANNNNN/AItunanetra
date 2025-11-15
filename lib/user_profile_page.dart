@@ -130,7 +130,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                           borderSide: const BorderSide(width: 2.0, color: Color(0xFF0D0D0D)),
                         ),
                         filled: true,
-                        fillColor: Colors.white.withOpacity(0.8),
+                        fillColor: const Color(0xCCFFFFFF), // 0xCC = ~80% opacity white
                         labelStyle: const TextStyle(
                           fontFamily: 'Helvetica',
                           color: Colors.black54,
@@ -167,7 +167,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                           borderSide: const BorderSide(width: 2.0, color: Color(0xFF0D0D0D)),
                         ),
                         filled: true,
-                        fillColor: Colors.white.withOpacity(0.8),
+                        fillColor: const Color(0xCCFFFFFF), // 0xCC = ~80% opacity white
                         labelStyle: const TextStyle(
                           fontFamily: 'Helvetica',
                           color: Colors.black54,

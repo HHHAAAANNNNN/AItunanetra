@@ -128,7 +128,7 @@ class _SettingPageState extends State<SettingPage> {
                               });
                             },
                             activeColor: _textColor,
-                            inactiveColor: _textColor.withOpacity(0.3),
+                            inactiveColor: _textColor.withAlpha((255 * 0.3).round()),
                           ),
                         ),
                       ],
@@ -153,7 +153,7 @@ class _SettingPageState extends State<SettingPage> {
                               });
                             },
                             activeColor: _textColor,
-                            inactiveColor: _textColor.withOpacity(0.3),
+                            inactiveColor: _textColor.withAlpha((255 * 0.3).round()),
                           ),
                         ),
                       ],
@@ -180,7 +180,7 @@ class _SettingPageState extends State<SettingPage> {
                               });
                             },
                             activeColor: _textColor,
-                            inactiveColor: _textColor.withOpacity(0.3),
+                            inactiveColor: _textColor.withAlpha((255 * 0.3).round()),
                           ),
                         ),
                       ],
@@ -243,15 +243,15 @@ class _SettingPageState extends State<SettingPage> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Text(
-                              '#${_textColor.value.toRadixString(16).substring(2).toUpperCase()}',
+                              '#${_textColor.toString().substring(10, 16).toUpperCase()}',
                               style: TextStyle(color: _textColor, fontFamily: 'Helvetica', fontSize: 20),
                             ),
                             Text(
-                              '#${_bgColor1.value.toRadixString(16).substring(2).toUpperCase()}',
+                              '#${_bgColor1.toString().substring(10, 16).toUpperCase()}',
                               style: TextStyle(color: _textColor, fontFamily: 'Helvetica', fontSize: 20),
                             ),
                             Text(
-                              '#${_bgColor2.value.toRadixString(16).substring(2).toUpperCase()}',
+                              '#${_bgColor2.toString().substring(10, 16).toUpperCase()}',
                               style: TextStyle(color: _textColor, fontFamily: 'Helvetica', fontSize: 20),
                             ),
                           ],
@@ -359,7 +359,7 @@ class _SettingPageState extends State<SettingPage> {
                 borderSide: BorderSide(width: 2.0, color: textColor),
               ),
               filled: true,
-              fillColor: Colors.white.withOpacity(0.8),
+              fillColor: const Color(0xCCFFFFFF), // 0xCC = ~80% opacity white
             ),
           ),
         ),
@@ -371,18 +371,6 @@ class _SettingPageState extends State<SettingPage> {
           checkColor: _bgColor3,
         ),
       ],
-    );
-  }
-
-  Widget _buildColorPreviewBox(Color color) {
-    return Container(
-      width: 50,
-      height: 50,
-      decoration: BoxDecoration(
-        color: color,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: _textColor, width: 1),
-      ),
     );
   }
 

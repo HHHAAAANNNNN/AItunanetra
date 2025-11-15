@@ -22,7 +22,7 @@ class _DashboardPageState extends State<DashboardPage> {
   bool _isFlashOn = false; //default senter kamera mati
   bool _isMicOn = false; //default mikrofon mati
   bool _isSubtitleOn = false; //default subtitle mati
-  AudioPlayer _audioPlayer = AudioPlayer();
+  final AudioPlayer _audioPlayer = AudioPlayer();
   FlutterTts flutterTts = FlutterTts();
   bool _showMenu = false; //default menu tertutup
   bool _showMenuItems = false; //default items di dalam menu belum muncul
@@ -149,7 +149,7 @@ class _DashboardPageState extends State<DashboardPage> {
       setState(() {
         _isFlashOn = !_isFlashOn;
       });
-    } on CameraException catch (e) {
+    } on CameraException {
       _playButtonFeedback('Gagal mengontrol senter');
     }
   }
@@ -337,7 +337,7 @@ class _DashboardPageState extends State<DashboardPage> {
                 borderRadius: BorderRadius.circular(_showMenu ? 25.0 : 25.0),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.3),
+                    color: const Color(0x4D000000), // Black with 30% opacity
                     spreadRadius: 1,
                     blurRadius: 3,
                     offset: const Offset(0, 2),
@@ -451,7 +451,7 @@ class _DashboardPageState extends State<DashboardPage> {
         borderRadius: BorderRadius.circular(30),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.3),
+            color: const Color(0x4D000000), // Black with 30% opacity
             spreadRadius: 1,
             blurRadius: 3,
             offset: const Offset(0, 2),
