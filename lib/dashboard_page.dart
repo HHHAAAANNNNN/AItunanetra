@@ -6,6 +6,7 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:aitunanetra/user_profile_page.dart';
 import 'package:aitunanetra/setting_page.dart';
+import 'package:flutter/gestures.dart';
 
 class DashboardPage extends StatefulWidget {
   final bool loggedInSuccessfully; // cek apakah berhasil login atau tidak
@@ -29,6 +30,7 @@ class _DashboardPageState extends State<DashboardPage> {
   DateTime? _lastBackPressed; //untuk tracking double tap back button
   double _subtitleBoxHeight = 0.18; // Rasio tinggi subtitle box (default lebih kecil ~18%)
   bool _animateSubtitle = true; // Flag untuk mengontrol apakah perlu animasi atau tidak
+  bool _isLongPressActive = false; // Track long press state
 
   @override
   void initState() {
@@ -78,7 +80,12 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 
   // Toggle mikrofon on/off (dummy untuk fitur berikutnya)
-  void _toggleMic() {
+  void _toggleMic() async {
+    // Haptic feedback untuk long press - strong and long
+    await HapticFeedback.heavyImpact();
+    await Future.delayed(const Duration(milliseconds: 100));
+    await HapticFeedback.mediumImpact();
+    
     setState(() {
       _isMicOn = !_isMicOn;
     });
@@ -137,6 +144,11 @@ class _DashboardPageState extends State<DashboardPage> {
       _playButtonFeedback('Kamera belum siap');
       return;
     }
+
+    // Haptic feedback untuk double-tap - light and quick
+    await HapticFeedback.lightImpact();
+    await Future.delayed(const Duration(milliseconds: 50));
+    await HapticFeedback.lightImpact();
 
     try {
       if (_isFlashOn) {
@@ -218,225 +230,255 @@ class _DashboardPageState extends State<DashboardPage> {
       canPop: false,
       onPopInvokedWithResult: (didPop, result) async {
         if (didPop) return;
-        
-        // Panggil fungsi _onWillPop yang akan handle exit
         await _onWillPop();
       },
       child: Scaffold(
-      body: Stack(
-        children: [
-          // Background Kamera - Fullscreen tanpa perubahan resolusi
-          // Dengan GestureDetector untuk double-tap dan long press
-          Positioned.fill(
-            child: GestureDetector(
-              onDoubleTap: () {
-                // Double tap untuk toggle flashlight
-                _toggleFlashlight();
-              },
-              onLongPress: () {
-                // Long press untuk toggle mikrofon
-                _toggleMic();
-              },
-              child: AspectRatio(
-                aspectRatio: _cameraController!.value.aspectRatio,
-                child: CameraPreview(_cameraController!),
+        body: Stack(
+          children: [
+            // Background Kamera dengan improved gesture handling
+            Positioned.fill(
+              child: RawGestureDetector(
+                gestures: <Type, GestureRecognizerFactory>{
+                  // Double-tap gesture (priority higher)
+                  DoubleTapGestureRecognizer: GestureRecognizerFactoryWithHandlers<DoubleTapGestureRecognizer>(
+                    () => DoubleTapGestureRecognizer(),
+                    (DoubleTapGestureRecognizer instance) {
+                      instance.onDoubleTap = () {
+                        // Cancel any pending long press
+                        _isLongPressActive = false;
+                        _toggleFlashlight();
+                      };
+                    },
+                  ),
+                  // Long press gesture with proper handling
+                  LongPressGestureRecognizer: GestureRecognizerFactoryWithHandlers<LongPressGestureRecognizer>(
+                    () => LongPressGestureRecognizer(
+                      duration: const Duration(milliseconds: 800),
+                    ),
+                    (LongPressGestureRecognizer instance) {
+                      instance.onLongPressStart = (details) {
+                        // Mark long press as active
+                        _isLongPressActive = true;
+                        
+                        // Delay to avoid conflict with double-tap
+                        Future.delayed(const Duration(milliseconds: 100), () {
+                          if (_isLongPressActive) {
+                            _toggleMic();
+                          }
+                        });
+                      };
+                      
+                      instance.onLongPressEnd = (details) {
+                        _isLongPressActive = false;
+                      };
+                      
+                      instance.onLongPressCancel = () {
+                        _isLongPressActive = false;
+                      };
+                    },
+                  ),
+                },
+                behavior: HitTestBehavior.opaque,
+                child: AspectRatio(
+                  aspectRatio: _cameraController!.value.aspectRatio,
+                  child: CameraPreview(_cameraController!),
+                ),
               ),
             ),
-          ),
 
-          // Subtitle Box - Overlay di depan kamera, hanya tampil jika ON
-          if (_isSubtitleOn)
+            // Subtitle Box - Overlay di depan kamera, hanya tampil jika ON
+            if (_isSubtitleOn)
+              Positioned(
+                bottom: 0,
+                left: 0,
+                right: 0,
+                height: MediaQuery.of(context).size.height * _subtitleBoxHeight,
+                child: Column(
+                  children: [
+                    // Drag handle untuk mengubah ukuran
+                    GestureDetector(
+                      onVerticalDragStart: (details) {
+                        // Nonaktifkan animasi saat mulai drag
+                        setState(() {
+                          _animateSubtitle = false;
+                        });
+                      },
+                      onVerticalDragUpdate: (details) {
+                        setState(() {
+                          // Update height berdasarkan drag tanpa animasi
+                          double newHeight = _subtitleBoxHeight - 
+                              (details.delta.dy / MediaQuery.of(context).size.height);
+                          // Batasi antara 0.12 (minimum) dan 0.6 (maximum)
+                          _subtitleBoxHeight = newHeight.clamp(0.12, 0.6);
+                        });
+                      },
+                      child: Container(
+                        height: 30,
+                        decoration: const BoxDecoration(
+                          color: Color(0xBF818C2E),
+                        ),
+                        child: Center(
+                          child: Container(
+                            width: 40,
+                            height: 4,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF0D0D0D),
+                              borderRadius: BorderRadius.circular(2),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    // Subtitle content box
+                    Expanded(
+                      child: Container(
+                        decoration: const BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              Color(0xFFEEF26B),
+                              Color(0xFFEAF207),
+                              Color(0xFFEBFF52),
+                            ],
+                            stops: [0.25, 0.75, 1.0],
+                          ),
+                        ),
+                        padding: const EdgeInsets.all(16.0),
+                        child: Center(
+                          child: SingleChildScrollView(
+                            child: Text(
+                              'Subtitle akan muncul di sini...',
+                              style: const TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF0D0D0D),
+                                fontFamily: 'Helvetica',
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+            //menu di pojok kanan atas
             Positioned(
-              bottom: 0,
+              top: 40,
+              right: 20,
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 300), // Durasi transisi dibukanya menu
+                curve: Curves.easeInOut,
+                width: 50,
+                height: _showMenu ? 150.0 : 50.0, //tinggi berubah dari 50 ke 150 jika ditekan
+                decoration: BoxDecoration(
+                  color: const Color(0xBF818C2E),
+                  borderRadius: BorderRadius.circular(_showMenu ? 25.0 : 25.0),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0x4D000000), // Black with 30% opacity
+                      spreadRadius: 1,
+                      blurRadius: 3,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _showMenu = !_showMenu;
+                          if (_showMenu) {
+                            // Jika membuka menu, tampilkan item setelah transisi container
+                            Future.delayed(const Duration(milliseconds: 200), () {
+                              if (mounted && _showMenu) {
+                                setState(() {
+                                  _showMenuItems = true;
+                                });
+                              }
+                            });
+                          } else {
+                            // Jika menutup menu, sembunyikan item
+                            setState(() {
+                              _showMenuItems = false; // Fade out menu items
+                            });
+                          }
+                        });
+                      },
+                      child: Container(
+                        width: 50,
+                        height: 50,
+                        color: Colors.transparent,
+                        child: Center(
+                          child: Image.asset(
+                            'assets/logo.png',
+                            width: 30,
+                            height: 30,
+                          ),
+                        ),
+                      ),
+                    ),
+                    // Menu item (Profile & Setting) hanya muncul saat _showMenuItems true
+                    if (_showMenu) // Pastikan container sudah membesar sebelum mencoba menampilkan item
+                      AnimatedOpacity(
+                        opacity: _showMenuItems ? 1.0 : 0.0,
+                        duration: const Duration(milliseconds: 300), // Durasi fade in/out item
+                        curve: Curves.easeInOut,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            const SizedBox(height: 1),
+                            IconButton( //icon button profile
+                              icon: const Icon(Icons.person, color: Color(0xFF0D0D0D), size: 24),
+                              onPressed: () {
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(builder: (context) => const UserProfilePage()),
+                                );
+                              },
+                              tooltip: 'Profile',
+                            ),
+                            IconButton( //icon button setting
+                              icon: const Icon(Icons.settings, color: Color(0xFF0D0D0D), size: 24),
+                              onPressed: () {
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(builder: (context) => const SettingPage()),
+                                );
+                              },
+                              tooltip: 'Setting',
+                            ),
+                          ],
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+
+            // Tombol Subtitle di bagian bawah tengah - bergeser ke atas saat subtitle aktif
+            AnimatedPositioned(
+              duration: _animateSubtitle 
+                  ? const Duration(milliseconds: 400) // Animasi saat button ditekan
+                  : Duration.zero, // Tidak ada animasi saat drag manual
+              curve: Curves.easeInOut,
+              bottom: _isSubtitleOn 
+                  ? (MediaQuery.of(context).size.height * _subtitleBoxHeight) + 20 // 20px di atas subtitle box
+                  : 40, // Posisi default
               left: 0,
               right: 0,
-              height: MediaQuery.of(context).size.height * _subtitleBoxHeight,
-              child: Column(
-                children: [
-                  // Drag handle untuk mengubah ukuran
-                  GestureDetector(
-                    onVerticalDragStart: (details) {
-                      // Nonaktifkan animasi saat mulai drag
-                      setState(() {
-                        _animateSubtitle = false;
-                      });
-                    },
-                    onVerticalDragUpdate: (details) {
-                      setState(() {
-                        // Update height berdasarkan drag tanpa animasi
-                        double newHeight = _subtitleBoxHeight - 
-                            (details.delta.dy / MediaQuery.of(context).size.height);
-                        // Batasi antara 0.12 (minimum) dan 0.6 (maximum)
-                        _subtitleBoxHeight = newHeight.clamp(0.12, 0.6);
-                      });
-                    },
-                    child: Container(
-                      height: 30,
-                      decoration: const BoxDecoration(
-                        color: Color(0xBF818C2E),
-                      ),
-                      child: Center(
-                        child: Container(
-                          width: 40,
-                          height: 4,
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF0D0D0D),
-                            borderRadius: BorderRadius.circular(2),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  // Subtitle content box
-                  Expanded(
-                    child: Container(
-                      decoration: const BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            Color(0xFFEEF26B),
-                            Color(0xFFEAF207),
-                            Color(0xFFEBFF52),
-                          ],
-                          stops: [0.25, 0.75, 1.0],
-                        ),
-                      ),
-                      padding: const EdgeInsets.all(16.0),
-                      child: Center(
-                        child: SingleChildScrollView(
-                          child: Text(
-                            'Subtitle akan muncul di sini...',
-                            style: const TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF0D0D0D),
-                              fontFamily: 'Helvetica',
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+              child: Center(
+                child: _buildActionButton(
+                  icon: _isSubtitleOn ? Icons.subtitles : Icons.subtitles_outlined,
+                  onPressed: _toggleSubtitle,
+                ),
               ),
             ),
-
-          //menu di pojok kanan atas
-          Positioned(
-            top: 40,
-            right: 20,
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 300), // Durasi transisi dibukanya menu
-              curve: Curves.easeInOut,
-              width: 50,
-              height: _showMenu ? 150.0 : 50.0, //tinggi berubah dari 50 ke 150 jika ditekan
-              decoration: BoxDecoration(
-                color: const Color(0xBF818C2E),
-                borderRadius: BorderRadius.circular(_showMenu ? 25.0 : 25.0),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0x4D000000), // Black with 30% opacity
-                    spreadRadius: 1,
-                    blurRadius: 3,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        _showMenu = !_showMenu;
-                        if (_showMenu) {
-                          // Jika membuka menu, tampilkan item setelah transisi container
-                          Future.delayed(const Duration(milliseconds: 200), () {
-                            if (mounted && _showMenu) {
-                              setState(() {
-                                _showMenuItems = true;
-                              });
-                            }
-                          });
-                        } else {
-                          // Jika menutup menu, sembunyikan item
-                          setState(() {
-                            _showMenuItems = false; // Fade out menu items
-                          });
-                        }
-                      });
-                    },
-                    child: Container(
-                      width: 50,
-                      height: 50,
-                      color: Colors.transparent,
-                      child: Center(
-                        child: Image.asset(
-                          'assets/logo.png',
-                          width: 30,
-                          height: 30,
-                        ),
-                      ),
-                    ),
-                  ),
-                  // Menu item (Profile & Setting) hanya muncul saat _showMenuItems true
-                  if (_showMenu) // Pastikan container sudah membesar sebelum mencoba menampilkan item
-                    AnimatedOpacity(
-                      opacity: _showMenuItems ? 1.0 : 0.0,
-                      duration: const Duration(milliseconds: 300), // Durasi fade in/out item
-                      curve: Curves.easeInOut,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          const SizedBox(height: 1),
-                          IconButton( //icon button profile
-                            icon: const Icon(Icons.person, color: Color(0xFF0D0D0D), size: 24),
-                            onPressed: () {
-                              Navigator.of(context).push(
-                                MaterialPageRoute(builder: (context) => const UserProfilePage()),
-                              );
-                            },
-                            tooltip: 'Profile',
-                          ),
-                          IconButton( //icon button setting
-                            icon: const Icon(Icons.settings, color: Color(0xFF0D0D0D), size: 24),
-                            onPressed: () {
-                              Navigator.of(context).push(
-                                MaterialPageRoute(builder: (context) => const SettingPage()),
-                              );
-                            },
-                            tooltip: 'Setting',
-                          ),
-                        ],
-                      ),
-                    ),
-                ],
-              ),
-            ),
-          ),
-
-          // Tombol Subtitle di bagian bawah tengah - bergeser ke atas saat subtitle aktif
-          AnimatedPositioned(
-            duration: _animateSubtitle 
-                ? const Duration(milliseconds: 400) // Animasi saat button ditekan
-                : Duration.zero, // Tidak ada animasi saat drag manual
-            curve: Curves.easeInOut,
-            bottom: _isSubtitleOn 
-                ? (MediaQuery.of(context).size.height * _subtitleBoxHeight) + 20 // 20px di atas subtitle box
-                : 40, // Posisi default
-            left: 0,
-            right: 0,
-            child: Center(
-              child: _buildActionButton(
-                icon: _isSubtitleOn ? Icons.subtitles : Icons.subtitles_outlined,
-                onPressed: _toggleSubtitle,
-              ),
-            ),
-          ),
-        ],
-      ),
+          ],
+        ),
       ),
     );
   }
