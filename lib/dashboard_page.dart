@@ -58,10 +58,15 @@ class _DashboardPageState extends State<DashboardPage> {
 
   // Inisialisasi TTS untuk back button warning
   Future<void> _initializeTts() async {
-    await flutterTts.setLanguage("id-ID"); // Indonesian
-    await flutterTts.setSpeechRate(0.6); // Sedikit lebih cepat dari default
-    await flutterTts.setVolume(1.0); // Volume
-    await flutterTts.setPitch(1.0); // Pitch
+    try {
+      await flutterTts.setLanguage("id-ID"); // Indonesian
+      await flutterTts.setSpeechRate(0.6); // Sedikit lebih cepat dari default
+      await flutterTts.setVolume(1.0); // Volume
+      await flutterTts.setPitch(1.0); // Pitch
+    } catch (e) {
+      // TTS engine not available
+      _showMessage('TTS Engine tidak tersedia. Silakan install Google TTS atau Speech Services.');
+    }
   }
 
   // Inisialisasi Audio Player
@@ -72,15 +77,48 @@ class _DashboardPageState extends State<DashboardPage> {
 
   // Play audio feedback untuk button actions (cepat dan singkat)
   Future<void> _playButtonFeedback(String message) async {
-    await flutterTts.setLanguage("id-ID");
-    await flutterTts.setSpeechRate(0.8); // Lebih cepat untuk feedback
-    await flutterTts.setVolume(1.0);
-    await flutterTts.setPitch(1.0);
-    await flutterTts.speak(message);
+    try {
+      await flutterTts.setLanguage("id-ID");
+      await flutterTts.setSpeechRate(0.8); // Lebih cepat untuk feedback
+      await flutterTts.setVolume(1.0);
+      await flutterTts.setPitch(1.0);
+      await flutterTts.speak(message);
+    } catch (e) {
+      // If TTS fails, show visual message only
+      _showMessage(message);
+    }
   }
 
-  // Toggle mikrofon on/off (dummy untuk fitur berikutnya)
+  // Play error audio feedback
+  Future<void> _playErrorFeedback(String errorMessage) async {
+    try {
+      await flutterTts.setLanguage("id-ID");
+      await flutterTts.setSpeechRate(0.7); // Slower for errors
+      await flutterTts.setVolume(1.0);
+      await flutterTts.setPitch(0.9); // Slightly lower pitch for errors
+      await flutterTts.speak(errorMessage);
+    } catch (e) {
+      // If TTS fails, show visual message
+      _showMessage(errorMessage);
+    }
+  }
+
+  // Toggle mikrofon on/off with permission check
   void _toggleMic() async {
+    // Check microphone permission first
+    var micStatus = await Permission.microphone.status;
+    
+    if (!micStatus.isGranted) {
+      // Request permission
+      var result = await Permission.microphone.request();
+      
+      if (!result.isGranted) {
+        // Permission denied
+        await _playErrorFeedback('Izin mikrofon ditolak. Buka pengaturan untuk mengaktifkan izin mikrofon.');
+        return;
+      }
+    }
+
     // Haptic feedback untuk long press - strong and long
     await HapticFeedback.heavyImpact();
     await Future.delayed(const Duration(milliseconds: 100));
@@ -103,45 +141,52 @@ class _DashboardPageState extends State<DashboardPage> {
 
   // Inisialisasi Kamera
   Future<void> _initializeCamera() async {
-    var status = await Permission.camera.request(); //request izin penggunaan kamera
-    if (status.isGranted) {
-      _cameras = await availableCameras();
-      if (_cameras != null && _cameras!.isNotEmpty) {
-        _cameraController = CameraController(
-          _cameras![0], //default menggunakan kamera 0 (belakang)
-          ResolutionPreset.medium,
-          enableAudio: false,
-        );
+    try {
+      var status = await Permission.camera.request(); //request izin penggunaan kamera
+      
+      if (status.isGranted) {
+        _cameras = await availableCameras();
+        if (_cameras != null && _cameras!.isNotEmpty) {
+          _cameraController = CameraController(
+            _cameras![0], //default menggunakan kamera 0 (belakang)
+            ResolutionPreset.medium,
+            enableAudio: false,
+          );
 
-        _cameraController!.initialize().then((_) {
-          if (!mounted) {
-            return;
-          }
-          setState(() {});
-        }).catchError((Object e) { //error handling jika akses kamera tidak diizinkan
-          if (e is CameraException) {
-            switch (e.code) {
-              case 'CameraAccessDenied':
-                _showMessage('Akses kamera ditolak.');
-                break;
-              default:
-                _showMessage('Terjadi kesalahan kamera: ${e.description}');
-                break;
+          _cameraController!.initialize().then((_) {
+            if (!mounted) {
+              return;
             }
-          }
-        });
-      } else {
-        _showMessage('Tidak ada kamera tersedia.');
+            setState(() {});
+          }).catchError((Object e) { //error handling jika akses kamera tidak diizinkan
+            if (e is CameraException) {
+              switch (e.code) {
+                case 'CameraAccessDenied':
+                  _playErrorFeedback('Akses kamera ditolak. Buka pengaturan untuk mengaktifkan izin kamera.');
+                  break;
+                default:
+                  _playErrorFeedback('Terjadi kesalahan kamera. ${e.description}');
+                  break;
+              }
+            }
+          });
+        } else {
+          _playErrorFeedback('Tidak ada kamera tersedia pada perangkat ini.');
+        }
+      } else if (status.isDenied) {
+        _playErrorFeedback('Izin kamera ditolak. Aplikasi memerlukan akses kamera untuk berfungsi.');
+      } else if (status.isPermanentlyDenied) {
+        _playErrorFeedback('Izin kamera ditolak secara permanen. Buka pengaturan aplikasi untuk mengaktifkan izin kamera.');
       }
-    } else {
-      _showMessage('Izin kamera ditolak.');
+    } catch (e) {
+      _playErrorFeedback('Gagal menginisialisasi kamera. Coba restart aplikasi.');
     }
   }
 
   // error handling jika kamera tidak diizinkan namun senter dinyalakan
   Future<void> _toggleFlashlight() async {
     if (_cameraController == null || !_cameraController!.value.isInitialized) {
-      _playButtonFeedback('Kamera belum siap');
+      _playErrorFeedback('Kamera belum siap. Tunggu beberapa saat.');
       return;
     }
 
@@ -161,8 +206,16 @@ class _DashboardPageState extends State<DashboardPage> {
       setState(() {
         _isFlashOn = !_isFlashOn;
       });
-    } on CameraException {
-      _playButtonFeedback('Gagal mengontrol senter');
+    } on CameraException catch (e) {
+      if (e.code == 'CameraAccessDenied') {
+        _playErrorFeedback('Akses kamera ditolak. Senter tidak dapat digunakan.');
+      } else if (e.code == 'torchModeNotSupported') {
+        _playErrorFeedback('Perangkat ini tidak mendukung mode senter.');
+      } else {
+        _playErrorFeedback('Gagal mengontrol senter. ${e.description}');
+      }
+    } catch (e) {
+      _playErrorFeedback('Terjadi kesalahan saat mengontrol senter.');
     }
   }
 
@@ -193,8 +246,12 @@ class _DashboardPageState extends State<DashboardPage> {
       _lastBackPressed = now;
       
       // Play TTS warning
-      flutterTts.speak(
-          "Anda menekan tombol back pada ponsel. Tekan sekali lagi untuk keluar dari aplikasi");
+      try {
+        await flutterTts.speak(
+            "Anda menekan tombol back pada ponsel. Tekan sekali lagi untuk keluar dari aplikasi");
+      } catch (e) {
+        // TTS failed, just show message
+      }
       
       _showMessage('Tekan sekali lagi untuk keluar');
       
