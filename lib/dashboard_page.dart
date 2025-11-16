@@ -9,7 +9,7 @@ import 'package:aitunanetra/setting_page.dart';
 import 'package:flutter/gestures.dart';
 
 class DashboardPage extends StatefulWidget {
-  final bool loggedInSuccessfully; // cek apakah berhasil login atau tidak
+  final bool loggedInSuccessfully; 
 
   const DashboardPage({super.key, this.loggedInSuccessfully = false});
 

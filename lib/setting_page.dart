@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:math'; // Untuk fungsi random
+import 'package:aitunanetra/preferences_service.dart';
 
 class SettingPage extends StatefulWidget {
   const SettingPage({super.key});
@@ -12,6 +13,7 @@ class SettingPage extends StatefulWidget {
 class _SettingPageState extends State<SettingPage> {
   bool _toggleSetting1 = true;
   bool _toggleSetting2 = false;
+  bool _alwaysShowOnboarding = false; // New setting for onboarding
   double _fontSizeOption = 1.0; // opsi ukuran font (1.0 = Normal, 0.8 = Kecil, 1.2 = Besar)
   double _brightnessValue = 50.0; // interval kecerahan aplikasi (0-100)
   double _textToVoiceSpeed = 1.0; // opsi kecepatan output text-to-voice (0.8 = Lambat, 1.0 = Normal, 1.2 = Cepat)
@@ -29,12 +31,27 @@ class _SettingPageState extends State<SettingPage> {
   @override
   void initState() {
     super.initState();
+    _loadSettings();
     
     // Maintain fullscreen mode
     SystemChrome.setEnabledSystemUIMode(
       SystemUiMode.immersiveSticky,
       overlays: [],
     );
+  }
+
+  Future<void> _loadSettings() async {
+    final alwaysShow = await PreferencesService.getAlwaysShowOnboarding();
+    setState(() {
+      _alwaysShowOnboarding = alwaysShow;
+    });
+  }
+
+  Future<void> _toggleAlwaysShowOnboarding(bool value) async {
+    await PreferencesService.setAlwaysShowOnboarding(value);
+    setState(() {
+      _alwaysShowOnboarding = value;
+    });
   }
 
   // dispose berfungsi untuk mematikan animasi ketika aplikasi ditutup
@@ -83,6 +100,51 @@ class _SettingPageState extends State<SettingPage> {
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 30),
+
+                    // Always Show Onboarding Setting
+                    Container(
+                      padding: const EdgeInsets.all(16.0),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withAlpha((255 * 0.3).round()),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Always Show Onboarding',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: _textColor,
+                                    fontFamily: 'Helvetica',
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Show boarding screen every time app starts',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: _textColor.withAlpha((255 * 0.7).round()),
+                                    fontFamily: 'Helvetica',
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Switch(
+                            value: _alwaysShowOnboarding,
+                            onChanged: _toggleAlwaysShowOnboarding,
+                            activeColor: _textColor,
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 10),
 
                     // Toggle Settings
                     _buildToggleSetting(

@@ -1,10 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart';
 import 'package:aitunanetra/dashboard_page.dart';
 import 'package:flutter_tts/flutter_tts.dart';
+import 'package:aitunanetra/preferences_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialize SharedPreferences before app starts
+  await SharedPreferences.getInstance();
   
   // Set fullscreen mode - hide status bar and navigation bar
   SystemChrome.setEnabledSystemUIMode(
@@ -49,13 +55,14 @@ class InitialSplashScreen extends StatefulWidget {
 class _InitialSplashScreenState extends State<InitialSplashScreen> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _fadeAnimation;
+  bool _hasNavigated = false;
 
   @override
   void initState() {
     super.initState();
     
     _controller = AnimationController(
-      duration: const Duration(milliseconds: 1000), // 1 detik untuk fade out
+      duration: const Duration(milliseconds: 1000),
       vsync: this,
     );
 
@@ -66,25 +73,63 @@ class _InitialSplashScreenState extends State<InitialSplashScreen> with SingleTi
       ),
     );
 
-    // Tunggu 1 detik, lalu mulai fade out
-    Future.delayed(const Duration(milliseconds: 1000), () {
-      if (mounted) {
-        _controller.forward();
-      }
-    });
+    // Start the flow
+    _startSplashSequence();
+  }
 
-    _controller.addStatusListener((status) {
-      if (status == AnimationStatus.completed) {
-        // Setelah fade out selesai, navigasi ke onboarding
+  Future<void> _startSplashSequence() async {
+    // Wait 1 second
+    await Future.delayed(const Duration(milliseconds: 1000));
+    
+    if (!mounted) return;
+    
+    // Start fade animation
+    _controller.forward();
+    
+    // Wait for fade to complete
+    await Future.delayed(const Duration(milliseconds: 1000));
+    
+    // Navigate
+    if (mounted && !_hasNavigated) {
+      _hasNavigated = true;
+      _navigateToNextScreen();
+    }
+  }
+
+  Future<void> _navigateToNextScreen() async {
+    try {
+      final shouldShowOnboarding = await PreferencesService.shouldShowOnboarding();
+      
+      if (!mounted) return;
+      
+      if (shouldShowOnboarding) {
+        // Show onboarding
         Navigator.of(context).pushReplacement(
-          PageRouteBuilder(
-            transitionDuration: const Duration(milliseconds: 500),
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                FadeTransition(opacity: animation, child: const OnboardingScreen()),
-          ),
+          MaterialPageRoute(builder: (context) => const OnboardingScreen()),
+        );
+      } else {
+        // Skip to login
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => const LoginPage()),
         );
       }
-    });
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('Navigation ERROR: $e');
+      }
+      // Fallback to onboarding
+      if (mounted) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => const OnboardingScreen()),
+        );
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 
   @override
@@ -214,10 +259,15 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     ),
   ];
 
-  void _navigateToLogin() {
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (context) => const LoginPage()),
-    );
+  void _navigateToLogin() async {
+    // Mark first run as completed
+    await PreferencesService.setFirstRunCompleted();
+    
+    if (mounted) {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (context) => const LoginPage()),
+      );
+    }
   }
 
   @override
