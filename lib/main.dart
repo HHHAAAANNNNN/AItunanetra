@@ -88,12 +88,6 @@ class _InitialSplashScreenState extends State<InitialSplashScreen> with SingleTi
   }
 
   @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
@@ -159,6 +153,35 @@ class OnboardingScreen extends StatefulWidget {
 class _OnboardingScreenState extends State<OnboardingScreen> {
   final PageController _pageController = PageController();
   int _currentPage = 0;
+  final FlutterTts flutterTts = FlutterTts();
+
+  @override
+  void initState() {
+    super.initState();
+    _playWelcomeAudio();
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    flutterTts.stop();
+    super.dispose();
+  }
+
+  Future<void> _playWelcomeAudio() async {
+    await flutterTts.setLanguage("id-ID"); // Indonesian
+    await flutterTts.setSpeechRate(0.6); // Speed (0.6 = moderate)
+    await flutterTts.setVolume(1.0); // Volume
+    await flutterTts.setPitch(1.0); // Pitch
+    
+    // Play welcome message
+    await flutterTts.speak(
+      "Selamat datang di AI Tunanetra. Aplikasi ini membantu kamu berinteraksi dengan lingkungan berbasis kamera pada ponsel. "
+      "Arahkan saja kamera dan pemindaian akan otomatis dijalankan. "
+      "Tap layar dua kali untuk menyalakan atau mematikan lampu, dan tekan tahan layar untuk menyalakan mikrofon untuk berinteraksi dengan AI. "
+      "Jika siap, silahkan login terlebih dahulu."
+    );
+  }
 
   final List<OnboardingData> _pages = [
     OnboardingData(
@@ -190,12 +213,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       showImage: true,
     ),
   ];
-
-  @override
-  void dispose() {
-    _pageController.dispose();
-    super.dispose();
-  }
 
   void _navigateToLogin() {
     Navigator.of(context).pushReplacement(
@@ -586,34 +603,9 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  final FlutterTts flutterTts = FlutterTts();
-
   // logo pada login screen berakhir di ukuran berikut
   final double _logoWidth = 102.0;
   final double _logoHeight = 89.0;
-
-  @override
-  void initState() {
-    super.initState();
-    _initializeTts();
-  }
-
-  // Initialize TTS with Indonesian language settings
-  Future<void> _initializeTts() async {
-    await flutterTts.setLanguage("id-ID"); // Indonesian
-    await flutterTts.setSpeechRate(0.6); // Speed (0.5 = slower, good for accessibility)
-    await flutterTts.setVolume(1.0); // Volume
-    await flutterTts.setPitch(1.0); // Pitch
-    
-    // Play welcome message
-    await flutterTts.speak("Selamat datang di AI Tunanetra. By Any Chance, if my audio sounds weird then I'm unable to talk in English.");
-  }
-
-  @override
-  void dispose() {
-    flutterTts.stop();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
