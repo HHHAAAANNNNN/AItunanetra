@@ -477,6 +477,42 @@ class _DashboardPageState extends State<DashboardPage> {
                 ),
               ),
             ),
+
+            // Mic Active Indicator - Bottom right corner
+            if (_isMicOn)
+              AnimatedPositioned(
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeInOut,
+                bottom: _isSubtitleOn 
+                    ? (MediaQuery.of(context).size.height * _subtitleBoxHeight) + 20 // 20px di atas subtitle box
+                    : 40, // Posisi default
+                right: 20,
+                child: AnimatedOpacity(
+                  opacity: _isMicOn ? 1.0 : 0.0,
+                  duration: const Duration(milliseconds: 300),
+                  child: Container(
+                    width: 60,
+                    height: 60,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFEF4444), // Red color to indicate active mic
+                      borderRadius: BorderRadius.circular(30),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0x4D000000), // Black with 30% opacity
+                          spreadRadius: 1,
+                          blurRadius: 3,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: const Icon(
+                      Icons.mic,
+                      color: Colors.white,
+                      size: 30,
+                    ),
+                  ),
+                ),
+              ),
           ],
         ),
       ),

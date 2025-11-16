@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'dart:math'; // Untuk fungsi random
 import 'package:aitunanetra/preferences_service.dart';
 
 class SettingPage extends StatefulWidget {
@@ -11,16 +10,20 @@ class SettingPage extends StatefulWidget {
 }
 
 class _SettingPageState extends State<SettingPage> {
-  bool _toggleSetting1 = true;
-  bool _toggleSetting2 = false;
-  bool _alwaysShowOnboarding = false; // New setting for onboarding
-  double _fontSizeOption = 1.0; // opsi ukuran font (1.0 = Normal, 0.8 = Kecil, 1.2 = Besar)
-  double _brightnessValue = 50.0; // interval kecerahan aplikasi (0-100)
-  double _textToVoiceSpeed = 1.0; // opsi kecepatan output text-to-voice (0.8 = Lambat, 1.0 = Normal, 1.2 = Cepat)
-
-  // Controllers untuk TextField
-  final TextEditingController _toggleTextController1 = TextEditingController(text: 'Lorem ipsum dolor sit amet.');
-  final TextEditingController _toggleTextController2 = TextEditingController(text: 'Lorem ipsum dolor sit amet.');
+  // Onboarding setting
+  bool _alwaysShowOnboarding = false;
+  
+  // Gesture settings
+  bool _gesturesEnabled = true;
+  bool _flashlightGestureEnabled = true;
+  bool _microphoneGestureEnabled = true;
+  
+  // TTS settings
+  double _ttsSpeed = 0.8; // 0.3, 0.5, 0.8
+  double _ttsVolume = 1.0; // 0.3, 0.7, 1.0
+  
+  // Vibration intensity: 0 = light, 1 = medium, 2 = heavy
+  int _vibrationIntensity = 2; // default heavy
 
   // Warna default aplikasi
   Color _bgColor1 = const Color(0xFFEEF26B);
@@ -57,8 +60,6 @@ class _SettingPageState extends State<SettingPage> {
   // dispose berfungsi untuk mematikan animasi ketika aplikasi ditutup
   @override
   void dispose() {
-    _toggleTextController1.dispose();
-    _toggleTextController2.dispose();
     super.dispose();
   }
 
@@ -102,223 +103,170 @@ class _SettingPageState extends State<SettingPage> {
                     const SizedBox(height: 30),
 
                     // Always Show Onboarding Setting
+                    _buildToggleContainer(
+                      title: 'Always Show Onboarding',
+                      description: 'Show boarding screen every time app starts',
+                      value: _alwaysShowOnboarding,
+                      onChanged: _toggleAlwaysShowOnboarding,
+                    ),
+                    const SizedBox(height: 15),
+
+                    // GESTURE SETTINGS SECTION
+                    Text(
+                      'Gesture Controls',
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: _textColor,
+                        fontFamily: 'Helvetica',
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+
+                    // Enable/Disable Gestures
+                    _buildToggleContainer(
+                      title: 'Enable Gestures',
+                      description: 'Enable or disable all gesture controls',
+                      value: _gesturesEnabled,
+                      onChanged: (value) {
+                        setState(() {
+                          _gesturesEnabled = value;
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 10),
+
+                    // Gesture sub-options (only show if gestures enabled)
+                    if (_gesturesEnabled) ...[
+                      Padding(
+                        padding: const EdgeInsets.only(left: 16.0),
+                        child: Column(
+                          children: [
+                            _buildToggleContainer(
+                              title: 'Flashlight Gesture',
+                              description: 'Double-tap to toggle flashlight',
+                              value: _flashlightGestureEnabled,
+                              onChanged: (value) {
+                                setState(() {
+                                  _flashlightGestureEnabled = value;
+                                });
+                              },
+                            ),
+                            const SizedBox(height: 10),
+                            _buildToggleContainer(
+                              title: 'Microphone Gesture',
+                              description: 'Long-press to toggle microphone',
+                              value: _microphoneGestureEnabled,
+                              onChanged: (value) {
+                                setState(() {
+                                  _microphoneGestureEnabled = value;
+                                });
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: 15),
+
+                    // TTS SETTINGS SECTION
+                    Text(
+                      'Text-to-Speech',
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: _textColor,
+                        fontFamily: 'Helvetica',
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+
+                    // TTS Speed Setting
+                    _buildSliderSetting(
+                      icon: Icons.speed,
+                      title: 'TTS Speed',
+                      value: _ttsSpeed,
+                      min: 0.3,
+                      max: 0.8,
+                      divisions: 2,
+                      label: _ttsSpeed <= 0.35
+                          ? 'Slow (0.3x)'
+                          : (_ttsSpeed <= 0.55 ? 'Medium (0.5x)' : 'Fast (0.8x)'),
+                      onChanged: (value) {
+                        setState(() {
+                          _ttsSpeed = value;
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 10),
+
+                    // TTS Volume Setting
+                    _buildSliderSetting(
+                      icon: Icons.volume_up,
+                      title: 'TTS Volume',
+                      value: _ttsVolume,
+                      min: 0.3,
+                      max: 1.0,
+                      divisions: 2,
+                      label: _ttsVolume <= 0.4
+                          ? 'Low (30%)'
+                          : (_ttsVolume <= 0.8 ? 'Medium (70%)' : 'High (100%)'),
+                      onChanged: (value) {
+                        setState(() {
+                          _ttsVolume = value;
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 15),
+
+                    // VIBRATION SETTINGS SECTION
+                    Text(
+                      'Haptic Feedback',
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: _textColor,
+                        fontFamily: 'Helvetica',
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+
+                    // Vibration Intensity Setting
                     Container(
                       padding: const EdgeInsets.all(16.0),
                       decoration: BoxDecoration(
                         color: Colors.white.withAlpha((255 * 0.3).round()),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Always Show Onboarding',
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                    color: _textColor,
-                                    fontFamily: 'Helvetica',
-                                  ),
+                          Row(
+                            children: [
+                              Icon(Icons.vibration, size: 24, color: _textColor),
+                              const SizedBox(width: 8),
+                              Text(
+                                'Vibration Intensity',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: _textColor,
+                                  fontFamily: 'Helvetica',
                                 ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  'Show boarding screen every time app starts',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: _textColor.withAlpha((255 * 0.7).round()),
-                                    fontFamily: 'Helvetica',
-                                  ),
-                                ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
-                          Switch(
-                            value: _alwaysShowOnboarding,
-                            onChanged: _toggleAlwaysShowOnboarding,
-                            activeColor: _textColor,
+                          const SizedBox(height: 12),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              _buildVibrationButton('Light', 0),
+                              _buildVibrationButton('Medium', 1),
+                              _buildVibrationButton('Heavy', 2),
+                            ],
                           ),
                         ],
                       ),
-                    ),
-                    const SizedBox(height: 10),
-
-                    // Toggle Settings
-                    _buildToggleSetting(
-                      _toggleTextController1,
-                      _toggleSetting1,
-                          (bool? value) {
-                        setState(() {
-                          _toggleSetting1 = value!;
-                        });
-                      },
-                      _textColor,
-                    ),
-                    const SizedBox(height: 10),
-                    _buildToggleSetting(
-                      _toggleTextController2,
-                      _toggleSetting2,
-                          (bool? value) {
-                        setState(() {
-                          _toggleSetting2 = value!;
-                        });
-                      },
-                      _textColor,
-                    ),
-                    const SizedBox(height: 10),
-
-                    // Font Size Setting
-                    Row(
-                      children: [
-                        Image.asset('assets/text_fields.png', width: 24, height: 24, color: _textColor),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Slider(
-                            value: _fontSizeOption,
-                            min: 0.8,
-                            max: 1.2,
-                            divisions: 2, // dari 3 opsi yang diberikan, memilih opsi yang mana
-                            label: _fontSizeOption == 0.8
-                                ? 'Kecil'
-                                : (_fontSizeOption == 1.0 ? 'Normal' : 'Besar'),
-                            onChanged: (double value) {
-                              setState(() {
-                                _fontSizeOption = value;
-                              });
-                            },
-                            activeColor: _textColor,
-                            inactiveColor: _textColor.withAlpha((255 * 0.3).round()),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-
-                    // Brightness Setting
-                    Row(
-                      children: [
-                        Image.asset('assets/sun.png', width: 24, height: 24, color: _textColor),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Slider(
-                            value: _brightnessValue,
-                            min: 0,
-                            max: 100,
-                            divisions: 100,
-                            label: _brightnessValue.round().toString(),
-                            onChanged: (double value) {
-                              setState(() {
-                                _brightnessValue = value;
-                              });
-                            },
-                            activeColor: _textColor,
-                            inactiveColor: _textColor.withAlpha((255 * 0.3).round()),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-
-                    // Text-to-Voice Speed Setting
-                    Row(
-                      children: [
-                        Icon(Icons.volume_up, size: 24, color: _textColor),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Slider(
-                            value: _textToVoiceSpeed,
-                            min: 0.8,
-                            max: 1.2,
-                            divisions: 2, // dari 3 opsi, dipilih opsi kedua
-                            label: _textToVoiceSpeed == 0.8
-                                ? 'Lambat'
-                                : (_textToVoiceSpeed == 1.0 ? 'Normal' : 'Cepat'),
-                            onChanged: (double value) {
-                              setState(() {
-                                _textToVoiceSpeed = value;
-                              });
-                            },
-                            activeColor: _textColor,
-                            inactiveColor: _textColor.withAlpha((255 * 0.3).round()),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Column( // Kolom untuk ikon Randomize dan Reset
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            IconButton(
-                              icon: const Icon(Icons.shuffle, color: Color(0xFF0D0D0D), size: 30), // Ikon Randomize
-                              onPressed: () {
-                                setState(() {
-                                  _randomizeColors(); //jika ditekan, maka akan random warna
-                                });
-                              },
-                              tooltip: 'Randomize Colors',
-                            ),
-                            const SizedBox(height: 5),
-                            IconButton(
-                              icon: const Icon(Icons.refresh, color: Color(0xFF0D0D0D), size: 30), // Ikon Reset
-                              onPressed: () {
-                                setState(() {
-                                  _resetColors(); //jika ditekan, maka kembali ke set warna default
-                                });
-                              },
-                              tooltip: 'Reset Colors',
-                            ),
-                          ],
-                        ),
-                        const SizedBox(width: 15),
-
-                        // Preview Warna Utama
-                        Container(
-                          width: 80,
-                          height: 80,
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                              colors: [_bgColor1, _bgColor2], // Menggunakan 2 warna untuk gradien preview
-                            ),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: _textColor, width: 2),
-                          ),
-                          child: Center(
-                            child: Text(
-                              'Aa', // Contoh teks di tengah box preview
-                              style: TextStyle(fontSize: 24, color: _textColor, fontFamily: 'Helvetica'),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 15),
-
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              '#${_textColor.toString().substring(10, 16).toUpperCase()}',
-                              style: TextStyle(color: _textColor, fontFamily: 'Helvetica', fontSize: 20),
-                            ),
-                            Text(
-                              '#${_bgColor1.toString().substring(10, 16).toUpperCase()}',
-                              style: TextStyle(color: _textColor, fontFamily: 'Helvetica', fontSize: 20),
-                            ),
-                            Text(
-                              '#${_bgColor2.toString().substring(10, 16).toUpperCase()}',
-                              style: TextStyle(color: _textColor, fontFamily: 'Helvetica', fontSize: 20),
-                            ),
-                          ],
-                        ),
-                      ],
                     ),
                     const SizedBox(height: 20),
 
@@ -393,67 +341,154 @@ class _SettingPageState extends State<SettingPage> {
     );
   }
 
-  // Helper method untuk membuat pengaturan toggle dengan TextField
-  Widget _buildToggleSetting(TextEditingController controller, bool value, ValueChanged<bool?> onChanged, Color textColor) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Expanded(
-          child: TextField(
-            controller: controller,
-            readOnly: true,
-            style: TextStyle(
-              fontSize: 16,
-              color: textColor,
-              fontFamily: 'Helvetica',
-            ),
-            decoration: InputDecoration(
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(width: 2.0),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(width: 2.0, color: textColor),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(width: 2.0, color: textColor),
-              ),
-              filled: true,
-              fillColor: const Color(0xCCFFFFFF), // 0xCC = ~80% opacity white
+  // Helper method untuk membuat toggle container
+  Widget _buildToggleContainer({
+    required String title,
+    required String description,
+    required bool value,
+    required ValueChanged<bool> onChanged,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(16.0),
+      decoration: BoxDecoration(
+        color: Colors.white.withAlpha((255 * 0.3).round()),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: _textColor,
+                    fontFamily: 'Helvetica',
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  description,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: _textColor.withAlpha((255 * 0.7).round()),
+                    fontFamily: 'Helvetica',
+                  ),
+                ),
+              ],
             ),
           ),
-        ),
-        const SizedBox(width: 10),
-        Checkbox(
-          value: value,
-          onChanged: onChanged,
-          activeColor: textColor,
-          checkColor: _bgColor3,
-        ),
-      ],
+          Switch(
+            value: value,
+            onChanged: onChanged,
+            activeColor: _textColor,
+          ),
+        ],
+      ),
     );
   }
 
-  // Fungsi untuk merandom warna
-  void _randomizeColors() {
-    Random random = Random();
-    setState(() {
-      _bgColor1 = Color.fromARGB(255, random.nextInt(256), random.nextInt(256), random.nextInt(256));
-      _bgColor2 = Color.fromARGB(255, random.nextInt(256), random.nextInt(256), random.nextInt(256));
-      _bgColor3 = Color.fromARGB(255, random.nextInt(256), random.nextInt(256), random.nextInt(256));
-      _textColor = Color.fromARGB(255, random.nextInt(256), random.nextInt(256), random.nextInt(256));
-    });
+  // Helper method untuk slider settings
+  Widget _buildSliderSetting({
+    required IconData icon,
+    required String title,
+    required double value,
+    required double min,
+    required double max,
+    required int divisions,
+    required String label,
+    required ValueChanged<double> onChanged,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(16.0),
+      decoration: BoxDecoration(
+        color: Colors.white.withAlpha((255 * 0.3).round()),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, size: 24, color: _textColor),
+              const SizedBox(width: 8),
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: _textColor,
+                  fontFamily: 'Helvetica',
+                ),
+              ),
+            ],
+          ),
+          Slider(
+            value: value,
+            min: min,
+            max: max,
+            divisions: divisions,
+            label: label,
+            onChanged: onChanged,
+            activeColor: _textColor,
+            inactiveColor: _textColor.withAlpha((255 * 0.3).round()),
+          ),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 14,
+              color: _textColor.withAlpha((255 * 0.7).round()),
+              fontFamily: 'Helvetica',
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
-  // Fungsi untuk mereset warna ke default
-  void _resetColors() {
-    setState(() {
-      _bgColor1 = const Color(0xFFEEF26B);
-      _bgColor2 = const Color(0xFFEAF207);
-      _bgColor3 = const Color(0xFFEBFF52);
-      _textColor = const Color(0xFF0D0D0D);
-    });
+  // Helper method untuk vibration intensity buttons
+  Widget _buildVibrationButton(String label, int intensity) {
+    bool isSelected = _vibrationIntensity == intensity;
+    return Expanded(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4.0),
+        child: ElevatedButton(
+          onPressed: () {
+            setState(() {
+              _vibrationIntensity = intensity;
+            });
+            // Test vibration when selected
+            if (intensity == 0) {
+              HapticFeedback.lightImpact();
+            } else if (intensity == 1) {
+              HapticFeedback.mediumImpact();
+            } else {
+              HapticFeedback.heavyImpact();
+            }
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: isSelected ? _textColor : Colors.white,
+            foregroundColor: isSelected ? Colors.white : _textColor,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+              side: BorderSide(color: _textColor, width: 2),
+            ),
+            padding: const EdgeInsets.symmetric(vertical: 12),
+          ),
+          child: Text(
+            label,
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+              fontFamily: 'Helvetica',
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
