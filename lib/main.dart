@@ -189,7 +189,9 @@ class _InitialSplashScreenState extends State<InitialSplashScreen> with SingleTi
 
 // Onboarding Screen dengan swipeable pages
 class OnboardingScreen extends StatefulWidget {
-  const OnboardingScreen({super.key});
+  final bool playAudio;
+  
+  const OnboardingScreen({super.key, this.playAudio = true});
 
   @override
   State<OnboardingScreen> createState() => _OnboardingScreenState();
@@ -203,7 +205,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   @override
   void initState() {
     super.initState();
-    _playWelcomeAudio();
+    if (widget.playAudio) {
+      _playWelcomeAudio();
+    }
   }
 
   @override
@@ -221,10 +225,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     
     // Play welcome message in Indonesian
     await flutterTts.speak(
+      "disarankan untuk menyalakan suara ponsel untuk penggunaan aplikasi yang lebih baik."
       "Selamat datang di AI Tunanetra. Aplikasi ini membantu kamu berinteraksi dengan lingkungan berbasis kamera pada ponsel. "
       "Geser layar untuk melihat panduan berikutnya, atau tekan tombol selanjutnya. "
       "Arahkan saja kamera dan pemindaian akan otomatis dijalankan. "
       "Ketuk layar dua kali untuk menyalakan atau mematikan lampu senter, dan tekan tahan layar untuk mengaktifkan mikrofon."
+      "Jika sudah siap menggunakan aplikasi, tekan tombol di bawah pada halaman terakhir."
     );
   }
 
@@ -570,7 +576,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    'Geser untuk lanjut',
+                    'Geser ke kanan untuk lanjut',
                     style: TextStyle(
                       fontSize: 16,
                       fontStyle: FontStyle.italic,
@@ -583,6 +589,35 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             ),
 
           const SizedBox(height: 40),
+
+          // Button "Dengar Lagi" hanya di page terakhir
+          if (data.showButton)
+            ElevatedButton.icon(
+              onPressed: () async {
+                // Replay audio panduan
+                await _playWelcomeAudio();
+              },
+              icon: const Icon(Icons.replay, size: 20),
+              label: const Text(
+                'Dengar Lagi',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontFamily: 'Helvetica',
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.white,
+                foregroundColor: const Color(0xFF0D0D0D),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  side: const BorderSide(color: Color(0xFF0D0D0D), width: 2),
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+              ),
+            ),
+
+          if (data.showButton) const SizedBox(height: 12),
 
           // Button "Anda Siap?" hanya di page terakhir
           if (data.showButton)

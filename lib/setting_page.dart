@@ -12,6 +12,7 @@ class SettingPage extends StatefulWidget {
 class _SettingPageState extends State<SettingPage> {
   // Onboarding setting
   bool _alwaysShowOnboarding = false;
+  bool _alwaysPlayDashboardGuide = false;
   
   // Gesture settings
   bool _gesturesEnabled = true;
@@ -21,9 +22,6 @@ class _SettingPageState extends State<SettingPage> {
   // TTS settings
   double _ttsSpeed = 0.8; // 0.3, 0.5, 0.8
   double _ttsVolume = 1.0; // 0.3, 0.7, 1.0
-  
-  // Vibration intensity: 0 = light, 1 = medium, 2 = heavy
-  int _vibrationIntensity = 2; // default heavy
 
   // Warna default aplikasi
   Color _bgColor1 = const Color(0xFFEEF26B);
@@ -45,8 +43,10 @@ class _SettingPageState extends State<SettingPage> {
 
   Future<void> _loadSettings() async {
     final alwaysShow = await PreferencesService.getAlwaysShowOnboarding();
+    final alwaysPlayGuide = await PreferencesService.getAlwaysPlayDashboardGuide();
     setState(() {
       _alwaysShowOnboarding = alwaysShow;
+      _alwaysPlayDashboardGuide = alwaysPlayGuide;
     });
   }
 
@@ -54,6 +54,13 @@ class _SettingPageState extends State<SettingPage> {
     await PreferencesService.setAlwaysShowOnboarding(value);
     setState(() {
       _alwaysShowOnboarding = value;
+    });
+  }
+
+  Future<void> _toggleAlwaysPlayDashboardGuide(bool value) async {
+    await PreferencesService.setAlwaysPlayDashboardGuide(value);
+    setState(() {
+      _alwaysPlayDashboardGuide = value;
     });
   }
 
@@ -91,7 +98,7 @@ class _SettingPageState extends State<SettingPage> {
                     ),
                     const SizedBox(height: 10),
                     Text(
-                      'App Setting',
+                      'Pengaturan Aplikasi',
                       style: TextStyle(
                         fontSize: 32,
                         fontWeight: FontWeight.bold,
@@ -104,16 +111,25 @@ class _SettingPageState extends State<SettingPage> {
 
                     // Always Show Onboarding Setting
                     _buildToggleContainer(
-                      title: 'Always Show Onboarding',
-                      description: 'Show boarding screen every time app starts',
+                      title: 'Selalu Tampilkan Panduan',
+                      description: 'Tampilkan layar panduan setiap kali aplikasi dibuka',
                       value: _alwaysShowOnboarding,
                       onChanged: _toggleAlwaysShowOnboarding,
+                    ),
+                    const SizedBox(height: 10),
+
+                    // Always Play Dashboard Guide Setting
+                    _buildToggleContainer(
+                      title: 'Putar Audio Panduan Dashboard',
+                      description: 'Putar audio panduan setiap kali masuk ke halaman utama',
+                      value: _alwaysPlayDashboardGuide,
+                      onChanged: _toggleAlwaysPlayDashboardGuide,
                     ),
                     const SizedBox(height: 15),
 
                     // GESTURE SETTINGS SECTION
                     Text(
-                      'Gesture Controls',
+                      'Kontrol Gestur',
                       style: TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
@@ -125,8 +141,8 @@ class _SettingPageState extends State<SettingPage> {
 
                     // Enable/Disable Gestures
                     _buildToggleContainer(
-                      title: 'Enable Gestures',
-                      description: 'Enable or disable all gesture controls',
+                      title: 'Aktifkan Gestur',
+                      description: 'Aktifkan atau nonaktifkan semua kontrol gestur',
                       value: _gesturesEnabled,
                       onChanged: (value) {
                         setState(() {
@@ -143,8 +159,8 @@ class _SettingPageState extends State<SettingPage> {
                         child: Column(
                           children: [
                             _buildToggleContainer(
-                              title: 'Flashlight Gesture',
-                              description: 'Double-tap to toggle flashlight',
+                              title: 'Gestur Senter',
+                              description: 'Ketuk dua kali untuk menyalakan/mematikan senter',
                               value: _flashlightGestureEnabled,
                               onChanged: (value) {
                                 setState(() {
@@ -154,8 +170,8 @@ class _SettingPageState extends State<SettingPage> {
                             ),
                             const SizedBox(height: 10),
                             _buildToggleContainer(
-                              title: 'Microphone Gesture',
-                              description: 'Long-press to toggle microphone',
+                              title: 'Gestur Mikrofon',
+                              description: 'Tekan lama untuk menyalakan/mematikan mikrofon',
                               value: _microphoneGestureEnabled,
                               onChanged: (value) {
                                 setState(() {
@@ -171,7 +187,7 @@ class _SettingPageState extends State<SettingPage> {
 
                     // TTS SETTINGS SECTION
                     Text(
-                      'Text-to-Speech',
+                      'Suara Pembaca',
                       style: TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
@@ -184,14 +200,14 @@ class _SettingPageState extends State<SettingPage> {
                     // TTS Speed Setting
                     _buildSliderSetting(
                       icon: Icons.speed,
-                      title: 'TTS Speed',
+                      title: 'Kecepatan Suara',
                       value: _ttsSpeed,
                       min: 0.3,
                       max: 0.8,
                       divisions: 2,
                       label: _ttsSpeed <= 0.35
-                          ? 'Slow (0.3x)'
-                          : (_ttsSpeed <= 0.55 ? 'Medium (0.5x)' : 'Fast (0.8x)'),
+                          ? 'Lambat (0.3x)'
+                          : (_ttsSpeed <= 0.55 ? 'Sedang (0.5x)' : 'Cepat (0.8x)'),
                       onChanged: (value) {
                         setState(() {
                           _ttsSpeed = value;
@@ -203,70 +219,19 @@ class _SettingPageState extends State<SettingPage> {
                     // TTS Volume Setting
                     _buildSliderSetting(
                       icon: Icons.volume_up,
-                      title: 'TTS Volume',
+                      title: 'Volume Suara',
                       value: _ttsVolume,
                       min: 0.3,
                       max: 1.0,
                       divisions: 2,
                       label: _ttsVolume <= 0.4
-                          ? 'Low (30%)'
-                          : (_ttsVolume <= 0.8 ? 'Medium (70%)' : 'High (100%)'),
+                          ? 'Rendah (30%)'
+                          : (_ttsVolume <= 0.8 ? 'Sedang (70%)' : 'Tinggi (100%)'),
                       onChanged: (value) {
                         setState(() {
                           _ttsVolume = value;
                         });
                       },
-                    ),
-                    const SizedBox(height: 15),
-
-                    // VIBRATION SETTINGS SECTION
-                    Text(
-                      'Haptic Feedback',
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        color: _textColor,
-                        fontFamily: 'Helvetica',
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-
-                    // Vibration Intensity Setting
-                    Container(
-                      padding: const EdgeInsets.all(16.0),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withAlpha((255 * 0.3).round()),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Icon(Icons.vibration, size: 24, color: _textColor),
-                              const SizedBox(width: 8),
-                              Text(
-                                'Vibration Intensity',
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color: _textColor,
-                                  fontFamily: 'Helvetica',
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 12),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
-                              _buildVibrationButton('Light', 0),
-                              _buildVibrationButton('Medium', 1),
-                              _buildVibrationButton('Heavy', 2),
-                            ],
-                          ),
-                        ],
-                      ),
                     ),
                     const SizedBox(height: 20),
 
@@ -286,7 +251,7 @@ class _SettingPageState extends State<SettingPage> {
                             padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
                           ),
                           child: Text(
-                            'Cancel',
+                            'Batal',
                             style: TextStyle(
                               fontSize: 18,
                               color: const Color(0xFF0D0D0D),
@@ -309,7 +274,7 @@ class _SettingPageState extends State<SettingPage> {
                             padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
                           ),
                           child: Text(
-                            'Save!',
+                            'Simpan!',
                             style: TextStyle(
                               fontSize: 18,
                               color: Colors.white,
@@ -446,48 +411,6 @@ class _SettingPageState extends State<SettingPage> {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  // Helper method untuk vibration intensity buttons
-  Widget _buildVibrationButton(String label, int intensity) {
-    bool isSelected = _vibrationIntensity == intensity;
-    return Expanded(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 4.0),
-        child: ElevatedButton(
-          onPressed: () {
-            setState(() {
-              _vibrationIntensity = intensity;
-            });
-            // Test vibration when selected
-            if (intensity == 0) {
-              HapticFeedback.lightImpact();
-            } else if (intensity == 1) {
-              HapticFeedback.mediumImpact();
-            } else {
-              HapticFeedback.heavyImpact();
-            }
-          },
-          style: ElevatedButton.styleFrom(
-            backgroundColor: isSelected ? _textColor : Colors.white,
-            foregroundColor: isSelected ? Colors.white : _textColor,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
-              side: BorderSide(color: _textColor, width: 2),
-            ),
-            padding: const EdgeInsets.symmetric(vertical: 12),
-          ),
-          child: Text(
-            label,
-            style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
-              fontFamily: 'Helvetica',
-            ),
-          ),
-        ),
       ),
     );
   }

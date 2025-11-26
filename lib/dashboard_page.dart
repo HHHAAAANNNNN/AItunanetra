@@ -4,8 +4,9 @@ import 'package:camera/camera.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter_tts/flutter_tts.dart';
-import 'package:aitunanetra/user_profile_page.dart';
 import 'package:aitunanetra/setting_page.dart';
+import 'package:aitunanetra/main.dart';
+import 'package:aitunanetra/preferences_service.dart';
 import 'package:flutter/gestures.dart';
 
 class DashboardPage extends StatefulWidget {
@@ -31,6 +32,7 @@ class _DashboardPageState extends State<DashboardPage> {
   double _subtitleBoxHeight = 0.18; // Rasio tinggi subtitle box (default lebih kecil ~18%)
   bool _animateSubtitle = true; // Flag untuk mengontrol apakah perlu animasi atau tidak
   bool _isLongPressActive = false; // Track long press state
+  bool _hasPlayedWelcomeGuide = false; // Track apakah sudah memainkan audio panduan
 
   @override
   void initState() {
@@ -45,6 +47,7 @@ class _DashboardPageState extends State<DashboardPage> {
     _initializeCamera();
     _initAudioPlayer();
     _initializeTts();
+    _playWelcomeGuide();
 
     // Tampilkan notifikasi jika berhasil login
     if (widget.loggedInSuccessfully) {
@@ -66,6 +69,42 @@ class _DashboardPageState extends State<DashboardPage> {
     } catch (e) {
       // TTS engine not available
       _showMessage('TTS Engine tidak tersedia. Silakan install Google TTS atau Speech Services.');
+    }
+  }
+
+  // Play welcome guide audio saat pertama masuk dashboard
+  Future<void> _playWelcomeGuide() async {
+    // Cek apakah user mengaktifkan "always play dashboard guide"
+    final alwaysPlayGuide = await PreferencesService.getAlwaysPlayDashboardGuide();
+    
+    // Jika tidak always play dan sudah pernah dimainkan, skip
+    if (!alwaysPlayGuide && _hasPlayedWelcomeGuide) return;
+    
+    // Tunggu sebentar untuk memastikan TTS sudah siap
+    await Future.delayed(const Duration(milliseconds: 1500));
+    
+    try {
+      await flutterTts.setLanguage("id-ID");
+      await flutterTts.setSpeechRate(0.6);
+      await flutterTts.setVolume(1.0);
+      await flutterTts.setPitch(1.0);
+      
+      String guideText = "Selamat datang di AI Tunanetra. "
+          "Di bagian bawah layar terdapat tiga tombol. "
+          "Dari kiri ke kanan adalah tombol senter, tombol teks, dan tombol mikrofon. "
+          "Di pojok kanan atas terdapat tombol menu yang menampilkan pengaturan untuk menyesuaikan aplikasi dan tombol keluar untuk menutup aplikasi. "
+          "Di pojok kiri atas terdapat tombol panduan untuk melihat kembali cara penggunaan aplikasi.";
+      
+      await flutterTts.speak(guideText);
+      
+      // Hanya set flag jika tidak always play (untuk first time only behavior)
+      if (!alwaysPlayGuide) {
+        setState(() {
+          _hasPlayedWelcomeGuide = true;
+        });
+      }
+    } catch (e) {
+      // Jika TTS gagal, tidak masalah
     }
   }
 
@@ -119,11 +158,6 @@ class _DashboardPageState extends State<DashboardPage> {
       }
     }
 
-    // Haptic feedback untuk long press - strong and long
-    await HapticFeedback.heavyImpact();
-    await Future.delayed(const Duration(milliseconds: 100));
-    await HapticFeedback.mediumImpact();
-    
     setState(() {
       _isMicOn = !_isMicOn;
     });
@@ -189,11 +223,6 @@ class _DashboardPageState extends State<DashboardPage> {
       _playErrorFeedback('Kamera belum siap. Tunggu beberapa saat.');
       return;
     }
-
-    // Haptic feedback untuk double-tap - light and quick
-    await HapticFeedback.lightImpact();
-    await Future.delayed(const Duration(milliseconds: 50));
-    await HapticFeedback.lightImpact();
 
     try {
       if (_isFlashOn) {
@@ -430,7 +459,7 @@ class _DashboardPageState extends State<DashboardPage> {
                 duration: const Duration(milliseconds: 300), // Durasi transisi dibukanya menu
                 curve: Curves.easeInOut,
                 width: 50,
-                height: _showMenu ? 150.0 : 50.0, //tinggi berubah dari 50 ke 150 jika ditekan
+                height: _showMenu ? 150.0 : 50.0, //tinggi berubah dari 50 ke 150 jika ditekan (2 buttons: Setting + Exit)
                 decoration: BoxDecoration(
                   color: const Color(0xBF818C2E),
                   borderRadius: BorderRadius.circular(_showMenu ? 25.0 : 25.0),
@@ -480,7 +509,7 @@ class _DashboardPageState extends State<DashboardPage> {
                         ),
                       ),
                     ),
-                    // Menu item (Profile & Setting) hanya muncul saat _showMenuItems true
+                    // Menu item (Setting & Exit) hanya muncul saat _showMenuItems true
                     if (_showMenu) // Pastikan container sudah membesar sebelum mencoba menampilkan item
                       AnimatedOpacity(
                         opacity: _showMenuItems ? 1.0 : 0.0,
@@ -490,23 +519,26 @@ class _DashboardPageState extends State<DashboardPage> {
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             const SizedBox(height: 1),
-                            IconButton( //icon button profile
-                              icon: const Icon(Icons.person, color: Color(0xFF0D0D0D), size: 24),
-                              onPressed: () {
-                                Navigator.of(context).push(
-                                  MaterialPageRoute(builder: (context) => const UserProfilePage()),
-                                );
-                              },
-                              tooltip: 'Profile',
-                            ),
                             IconButton( //icon button setting
                               icon: const Icon(Icons.settings, color: Color(0xFF0D0D0D), size: 24),
-                              onPressed: () {
+                              onPressed: () async {
+                                // Stop audio panduan sebelum navigasi ke setting
+                                await flutterTts.stop();
                                 Navigator.of(context).push(
                                   MaterialPageRoute(builder: (context) => const SettingPage()),
                                 );
                               },
                               tooltip: 'Setting',
+                            ),
+                            IconButton( //icon button exit app
+                              icon: const Icon(Icons.exit_to_app, color: Color(0xFF0D0D0D), size: 24),
+                              onPressed: () async {
+                                // Trigger exit - sama seperti back button 2x
+                                await flutterTts.speak("Keluar dari aplikasi");
+                                await Future.delayed(const Duration(milliseconds: 500));
+                                SystemNavigator.pop();
+                              },
+                              tooltip: 'Keluar',
                             ),
                           ],
                         ),
@@ -516,7 +548,32 @@ class _DashboardPageState extends State<DashboardPage> {
               ),
             ),
 
-            // Tombol Subtitle di bagian bawah tengah - bergeser ke atas saat subtitle aktif
+            // Button Panduan di pojok kiri atas
+            Positioned(
+              top: 40,
+              left: 20,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: const Color(0xFFEEF26B),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: const Color(0xFF0D0D0D), width: 2),
+                ),
+                child: IconButton(
+                  icon: const Icon(Icons.help_outline, color: Color(0xFF0D0D0D), size: 30),
+                  onPressed: () async {
+                    await flutterTts.speak("Membuka panduan penggunaan");
+                    await Future.delayed(const Duration(milliseconds: 500));
+                    // Navigate to onboarding screen with audio enabled
+                    Navigator.of(context).pushReplacement(
+                      MaterialPageRoute(builder: (context) => const OnboardingScreen(playAudio: true)),
+                    );
+                  },
+                  tooltip: 'Panduan',
+                ),
+              ),
+            ),
+
+            // Tombol control di bagian bawah: Flashlight, Subtitle, Microphone
             AnimatedPositioned(
               duration: _animateSubtitle 
                   ? const Duration(milliseconds: 400) // Animasi saat button ditekan
@@ -527,62 +584,55 @@ class _DashboardPageState extends State<DashboardPage> {
                   : 40, // Posisi default
               left: 0,
               right: 0,
-              child: Center(
-                child: _buildActionButton(
-                  icon: _isSubtitleOn ? Icons.subtitles : Icons.subtitles_outlined,
-                  onPressed: _toggleSubtitle,
-                ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // Flashlight button (kiri)
+                  _buildActionButton(
+                    icon: _isFlashOn ? Icons.flashlight_on : Icons.flashlight_off,
+                    onPressed: _toggleFlashlight,
+                    backgroundColor: _isFlashOn ? const Color(0xFFFFEB3B) : const Color(0xFFEEF26B),
+                  ),
+                  
+                  const SizedBox(width: 20), // Spacing antar button
+                  
+                  // Subtitle button (tengah)
+                  _buildActionButton(
+                    icon: _isSubtitleOn ? Icons.subtitles : Icons.subtitles_outlined,
+                    onPressed: _toggleSubtitle,
+                    backgroundColor: const Color(0xFFEEF26B),
+                  ),
+                  
+                  const SizedBox(width: 20), // Spacing antar button
+                  
+                  // Microphone button (kanan)
+                  _buildActionButton(
+                    icon: _isMicOn ? Icons.mic : Icons.mic_off,
+                    onPressed: _toggleMic,
+                    backgroundColor: _isMicOn ? const Color(0xFFEF4444) : const Color(0xFFEEF26B),
+                  ),
+                ],
               ),
             ),
 
-            // Mic Active Indicator - Bottom right corner
-            if (_isMicOn)
-              AnimatedPositioned(
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeInOut,
-                bottom: _isSubtitleOn 
-                    ? (MediaQuery.of(context).size.height * _subtitleBoxHeight) + 20 // 20px di atas subtitle box
-                    : 40, // Posisi default
-                right: 20,
-                child: AnimatedOpacity(
-                  opacity: _isMicOn ? 1.0 : 0.0,
-                  duration: const Duration(milliseconds: 300),
-                  child: Container(
-                    width: 60,
-                    height: 60,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFEF4444), // Red color to indicate active mic
-                      borderRadius: BorderRadius.circular(30),
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0x4D000000), // Black with 30% opacity
-                          spreadRadius: 1,
-                          blurRadius: 3,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: const Icon(
-                      Icons.mic,
-                      color: Colors.white,
-                      size: 30,
-                    ),
-                  ),
-                ),
-              ),
+            // Mic Active Indicator - Removed (sudah ada button mic)
           ],
         ),
       ),
     );
   }
 
-  // Helper method untuk membuat tombol aksi bawah
-  Widget _buildActionButton({required IconData icon, required VoidCallback onPressed}) {
+  // Helper method untuk membuat tombol aksi bawah dengan custom background color
+  Widget _buildActionButton({
+    required IconData icon, 
+    required VoidCallback onPressed,
+    Color backgroundColor = const Color(0xFFEEF26B),
+  }) {
     return Container(
       width: 60,
       height: 60,
       decoration: BoxDecoration(
-        color: const Color(0xFFEEF26B), // Warna tombol
+        color: backgroundColor, // Custom background color
         borderRadius: BorderRadius.circular(30),
         boxShadow: [
           BoxShadow(
