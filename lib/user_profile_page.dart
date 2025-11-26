@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:aitunanetra/dashboard_page.dart';
-import 'package:aitunanetra/main.dart';
+import 'package:aitunanetra/preferences_service.dart';
 
 class UserProfilePage extends StatefulWidget {
   const UserProfilePage({super.key});
@@ -270,20 +270,18 @@ class _UserProfilePageState extends State<UserProfilePage> {
                                   ),
                                   ElevatedButton(
                                     onPressed: () {
-                                      // Close dialog and navigate to login page
+                                      // Close dialog and navigate to onboarding page (login removed)
                                       Navigator.of(context).pop(); // Close dialog
-                                      Navigator.of(context).pushAndRemoveUntil(
-                                        MaterialPageRoute(
-                                          builder: (context) => const LoginPage(),
-                                        ),
-                                        (route) => false, // Remove all previous routes
-                                      );
+                                      // Reset preferences to show onboarding
+                                      PreferencesService.setAlwaysShowOnboarding(true);
+                                      // Navigate back to dashboard
+                                      Navigator.of(context).pop(); // Exit profile page
                                     },
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: const Color(0xFF0D0D0D),
                                     ),
                                     child: const Text(
-                                      'Logout',
+                                      'Kembali ke Menu Utama',
                                       style: TextStyle(
                                         color: Colors.white,
                                         fontFamily: 'Helvetica',
@@ -295,9 +293,9 @@ class _UserProfilePageState extends State<UserProfilePage> {
                             },
                           );
                         },
-                        icon: const Icon(Icons.logout, color: Colors.white),
+                        icon: const Icon(Icons.home, color: Colors.white),
                         label: const Text(
-                          'Logout',
+                          'Menu Utama',
                           style: TextStyle(
                             fontSize: 18,
                             color: Colors.white,

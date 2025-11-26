@@ -108,9 +108,9 @@ class _InitialSplashScreenState extends State<InitialSplashScreen> with SingleTi
           MaterialPageRoute(builder: (context) => const OnboardingScreen()),
         );
       } else {
-        // Skip to login
+        // Skip directly to dashboard (login removed based on user feedback)
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const LoginPage()),
+          MaterialPageRoute(builder: (context) => const DashboardPage()),
         );
       }
     } catch (e) {
@@ -219,53 +219,54 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     await flutterTts.setVolume(1.0); // Volume
     await flutterTts.setPitch(1.0); // Pitch
     
-    // Play welcome message
+    // Play welcome message in Indonesian
     await flutterTts.speak(
       "Selamat datang di AI Tunanetra. Aplikasi ini membantu kamu berinteraksi dengan lingkungan berbasis kamera pada ponsel. "
+      "Geser layar untuk melihat panduan berikutnya, atau tekan tombol selanjutnya. "
       "Arahkan saja kamera dan pemindaian akan otomatis dijalankan. "
-      "Tap layar dua kali untuk menyalakan atau mematikan lampu, dan tekan tahan layar untuk menyalakan mikrofon untuk berinteraksi dengan AI. "
-      "Jika siap, silahkan login terlebih dahulu."
+      "Ketuk layar dua kali untuk menyalakan atau mematikan lampu senter, dan tekan tahan layar untuk mengaktifkan mikrofon."
     );
   }
 
   final List<OnboardingData> _pages = [
     OnboardingData(
       image: 'assets/SplashScreen2.png',
-      title: 'Welcome',
-      subtitle: 'to AITunanetra!',
-      description: 'This App Continuously\nScan Objects Around You!',
+      title: 'Selamat Datang',
+      subtitle: 'di AITunanetra!',
+      description: 'Aplikasi Ini Terus Menerus\nMemindai Objek di Sekitar Anda!',
+      showSwipeHint: true,
     ),
     OnboardingData(
       image: 'assets/SplashScreen3.png',
-      title: 'Point your Camera',
-      subtitle: 'at Any Object,',
-      description: 'Detection Happens\nAutomatically!',
+      title: 'Arahkan Kamera',
+      subtitle: 'ke Objek Apa Pun,',
+      description: 'Deteksi Terjadi\nSecara Otomatis!',
     ),
     OnboardingData(
       image: 'assets/SplashScreen4.1.png',
-      title: 'Need Light?',
-      subtitle: 'Double-Tap Anywhere\non The Screen!',
-      description: 'Long Press\nto Activate Voice Control!',
+      title: 'Butuh Cahaya?',
+      subtitle: 'Ketuk Dua Kali di Mana Saja\npada Layar!',
+      description: 'Tekan Tahan\nuntuk Mengaktifkan Kontrol Suara!',
       showDualImages: true, 
       image2: 'assets/SplashScreen4.2.png', 
     ),
     OnboardingData(
       image: 'assets/logo.png',
-      title: 'Detection Starts',
-      subtitle: 'Automatically When You\nEnter the Camera View,',
-      description: '',
+      title: 'Deteksi Dimulai',
+      subtitle: 'Otomatis Saat Anda\nMembuka Tampilan Kamera',
+      description: 'Siap Menggunakan Aplikasi?',
       showButton: true,
       showImage: true,
     ),
   ];
 
-  void _navigateToLogin() async {
+  void _navigateToDashboard() async {
     // Mark first run as completed
     await PreferencesService.setFirstRunCompleted();
     
     if (mounted) {
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => const LoginPage()),
+        MaterialPageRoute(builder: (context) => const DashboardPage()),
       );
     }
   }
@@ -309,7 +310,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               child: Material(
                 color: Colors.transparent,
                 child: InkWell(
-                  onTap: _navigateToLogin,
+                  onTap: _navigateToDashboard,
                   borderRadius: BorderRadius.circular(20),
                   child: Container(
                     padding: const EdgeInsets.all(8),
@@ -323,17 +324,80 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               ),
             ),
 
-            // Page indicator di bawah
+            // Page indicator dan navigation buttons di bawah
             Positioned(
-              bottom: 40,
+              bottom: 20, // Diturunkan dari 40 ke 20 untuk mendekati bottom corner
               left: 0,
               right: 0,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(
-                  _pages.length,
-                  (index) => _buildIndicator(index == _currentPage),
-                ),
+              child: Column(
+                children: [
+                  // Navigation buttons (Previous / Next)
+                  if (_currentPage > 0 || _currentPage < _pages.length - 1)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          // Previous button
+                          if (_currentPage > 0)
+                            ElevatedButton.icon(
+                              onPressed: () {
+                                _pageController.previousPage(
+                                  duration: const Duration(milliseconds: 300),
+                                  curve: Curves.easeInOut,
+                                );
+                              },
+                              icon: const Icon(Icons.arrow_back, size: 20),
+                              label: const Text('Sebelumnya'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF0D0D0D),
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                            )
+                          else
+                            const SizedBox(width: 120), // Spacer when no previous button
+                          
+                          // Next button
+                          if (_currentPage < _pages.length - 1)
+                            ElevatedButton.icon(
+                              onPressed: () {
+                                _pageController.nextPage(
+                                  duration: const Duration(milliseconds: 300),
+                                  curve: Curves.easeInOut,
+                                );
+                              },
+                              label: const Text('Selanjutnya'),
+                              icon: const Icon(Icons.arrow_forward, size: 20),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF0D0D0D),
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                            )
+                          else
+                            const SizedBox(width: 120), // Spacer when no next button
+                        ],
+                      ),
+                    ),
+                  
+                  const SizedBox(height: 12), // Dikurangi dari 16 ke 12
+                  
+                  // Page indicator dots
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: List.generate(
+                      _pages.length,
+                      (index) => _buildIndicator(index == _currentPage),
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
@@ -477,7 +541,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               ),
             ),
 
-          const SizedBox(height: 40),
+          const SizedBox(height: 20), // Dikurangi dari 40 ke 20 untuk "Deteksi terjadi secara otomatis" & "Arahkan kamera" lebih dekat dengan gambar
 
           // Description
           if (data.description.isNotEmpty)
@@ -492,12 +556,38 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               ),
             ),
 
+          // Swipe hint untuk halaman pertama
+          if (data.showSwipeHint)
+            Padding(
+              padding: const EdgeInsets.only(top: 10.0), // Dikurangi dari 20 ke 10 agar "Geser untuk lanjut" lebih dekat dengan teks di atasnya
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.swipe,
+                    size: 24,
+                    color: const Color(0xFF0D0D0D).withAlpha((255 * 0.7).round()),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Geser untuk lanjut',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontStyle: FontStyle.italic,
+                      color: const Color(0xFF0D0D0D).withAlpha((255 * 0.7).round()),
+                      fontFamily: 'Helvetica',
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
           const SizedBox(height: 40),
 
-          // Button "You Ready?" hanya di page terakhir
+          // Button "Anda Siap?" hanya di page terakhir
           if (data.showButton)
             ElevatedButton(
-              onPressed: _navigateToLogin,
+              onPressed: _navigateToDashboard,
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF0D0D0D),
                 shape: RoundedRectangleBorder(
@@ -506,7 +596,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 18),
               ),
               child: const Text(
-                'You Ready?',
+                'Anda Siap?',
                 style: TextStyle(
                   fontSize: 20,
                   color: Colors.white,
@@ -542,8 +632,9 @@ class OnboardingData {
   final String description;
   final bool showButton;
   final bool showImage;
-  final bool showDualImages; // Property baru untuk dual images
+  final bool showDualImages; // Property untuk dual images
   final String? image2; // Property untuk gambar kedua (optional)
+  final bool showSwipeHint; // Property untuk menampilkan hint geser
 
   OnboardingData({
     required this.image,
@@ -554,244 +645,6 @@ class OnboardingData {
     this.showImage = false,
     this.showDualImages = false,
     this.image2,
+    this.showSwipeHint = false,
   });
-}
-
-// Dimulai dari splashscreen agar lebih nyaman penggunaan
-class SplashScreen extends StatefulWidget {
-  const SplashScreen({super.key});
-
-  @override
-  State<SplashScreen> createState() => _SplashScreenState();
-}
-
-class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _logoFadeAnimation;
-
-  final double _initialLogoWidth = 155.0;
-  final double _initialLogoHeight = 135.0;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      duration: const Duration(milliseconds: 1500), //animasi splashscreen ke login screen berlangsung 1,5 detik
-      vsync: this,
-    );
-
-    _logoFadeAnimation = Tween<double>(begin: 1.0, end: 0.0).animate( //animasi dimulai di detik 1, berakhir di detik 0
-      CurvedAnimation(
-        parent: _controller,
-        curve: const Interval(1000 / 1500, 1.0, curve: Curves.easeOut), //animasi berupa fade out
-      ),
-    );
-
-    _controller.forward();
-
-    _controller.addStatusListener((status) {
-      if (status == AnimationStatus.completed) { //kalau animasi selesai, start animasi login screen
-        Navigator.of(context).pushReplacement(
-          PageRouteBuilder(
-            transitionDuration: const Duration(milliseconds: 500), //durasi animasi login screen 0.5 detik
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                FadeTransition(opacity: animation, child: const LoginPage()),
-          ),
-        );
-      }
-    });
-  }
-
-  // dispose berfungsi untuk mematikan animasi ketika aplikasi ditutup
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration( //background aplikasi
-          gradient: LinearGradient( //gradient background aplikasi
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFFEEF26B),
-              Color(0xFFEAF207),
-              Color(0xFFEBFF52),
-            ],
-            stops: [0.25, 0.75, 1.0],
-          ),
-        ),
-        child: Center(
-          child: AnimatedBuilder(
-            animation: _controller,
-            builder: (context, child) {
-              return Opacity(
-                opacity: _logoFadeAnimation.value,
-                child: Image.asset(
-                  'assets/logo.png',
-                  width: _initialLogoWidth,
-                  height: _initialLogoHeight,
-                ),
-              );
-            },
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class LoginPage extends StatefulWidget {
-  const LoginPage({super.key});
-
-  @override
-  State<LoginPage> createState() => _LoginPageState();
-}
-
-class _LoginPageState extends State<LoginPage> {
-  // logo pada login screen berakhir di ukuran berikut
-  final double _logoWidth = 102.0;
-  final double _logoHeight = 89.0;
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFFEEF26B),
-              Color(0xFFEAF207),
-              Color(0xFFEBFF52),
-            ],
-            stops: [0.25, 0.75, 1.0],
-          ),
-        ),
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: <Widget>[
-                Image.asset(
-                  'assets/logo.png',
-                  width: _logoWidth,
-                  height: _logoHeight,
-                ),
-                const SizedBox(height: 50),
-                const Text(
-                  'Sign In to Your Account',
-                  style: TextStyle(
-                    fontSize: 36,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF0D0D0D),
-                    fontFamily: 'Helvetica',
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 5),
-                TextField(
-                  decoration: InputDecoration(
-                    labelText: 'Email',
-                    prefixIcon: const Icon(Icons.email),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(width: 2.0),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(width: 2.0, color: Color(0xFF0D0D0D)),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(width: 2.0, color: Color(0xFF0D0D0D)),
-                    ),
-                    filled: true,
-                    fillColor: const Color(0xCCFFFFFF), // 0xCC = ~80% opacity white
-                    labelStyle: const TextStyle(
-                      fontFamily: 'Helvetica',
-                      color: Color(0xFF0d0d0d),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 5),
-                TextField(
-                  obscureText: true,
-                  decoration: InputDecoration(
-                    labelText: 'Password',
-                    prefixIcon: const Icon(Icons.lock),
-                    suffixIcon: const Icon(Icons.visibility_off),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(width: 2.0),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(width: 2.0, color: Color(0xFF0D0D0D)),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(width: 2.0, color: Color(0xFF0D0D0D)),
-                    ),
-                    filled: true,
-                    fillColor: const Color(0xCCFFFFFF), // 0xCC = ~80% opacity white
-                    labelStyle: const TextStyle(
-                      fontFamily: 'Helvetica',
-                      color: Color(0xFF0d0d0d),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 5),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: TextButton(
-                    onPressed: () {
-                      //tombol 'Forgot Password' masih belum berfungsi
-                    },
-                    child: const Text(
-                      'Forgot password?',
-                      style: TextStyle(
-                        color: Color(0xFF0D0D0D),
-                        fontFamily: 'Helvetica',
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 5),
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.of(context).pushReplacement(
-                      MaterialPageRoute(builder: (context) => const DashboardPage(loggedInSuccessfully: true)),
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF0D0D0D),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    padding: const EdgeInsets.symmetric(horizontal: 80, vertical: 15),
-                  ),
-                  child: const Text(
-                    'Sign In',
-                    style: TextStyle(
-                      fontSize: 18,
-                      color: Colors.white,
-                      fontFamily: 'Helvetica',
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
 }
