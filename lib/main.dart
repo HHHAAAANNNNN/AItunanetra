@@ -226,6 +226,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     // Play welcome message in Indonesian
     await flutterTts.speak(
       "disarankan untuk menyalakan suara ponsel untuk penggunaan aplikasi yang lebih baik."
+      "pada pojok kanan-atas terdapat tombol untuk melewati panduan ini."
       "Selamat datang di AI Tunanetra. Aplikasi ini membantu kamu berinteraksi dengan lingkungan berbasis kamera pada ponsel. "
       "Geser layar untuk melihat panduan berikutnya, atau tekan tombol selanjutnya. "
       "Arahkan saja kamera dan pemindaian akan otomatis dijalankan. "
@@ -247,6 +248,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       title: 'Arahkan Kamera',
       subtitle: 'ke Objek Apa Pun,',
       description: 'Deteksi Terjadi\nSecara Otomatis!',
+      showSwipeHint: true,
     ),
     OnboardingData(
       image: 'assets/SplashScreen4.1.png',
@@ -254,7 +256,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       subtitle: 'Ketuk Dua Kali di Mana Saja\npada Layar!',
       description: 'Tekan Tahan\nuntuk Mengaktifkan Kontrol Suara!',
       showDualImages: true, 
-      image2: 'assets/SplashScreen4.2.png', 
+      image2: 'assets/SplashScreen4.2.png',
+      showSwipeHint: true,
     ),
     OnboardingData(
       image: 'assets/logo.png',
@@ -427,79 +430,96 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     }
 
     // Jika menampilkan dual images (untuk page 3)
-    if (data.showDualImages && data.image2 != null && data.image2!.isNotEmpty) {
-      return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 60.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // Title dengan subtitle
-            if (data.title.isNotEmpty)
-              RichText(
-                textAlign: TextAlign.center,
-                text: TextSpan(
-                  style: const TextStyle(
-                    fontSize: 36,
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'Helvetica',
-                    color: Color(0xFF0D0D0D),
+    if (data.showDualImages && data.image2 != null) {
+      return Column(
+        children: [
+          const SizedBox(height: 30),
+          // Title
+          Text(
+            data.title,
+            style: const TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF0D0D0D),
+              fontFamily: 'Helvetica',
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 10),
+          // Subtitle
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24.0),
+            child: Text(
+              data.subtitle,
+              style: const TextStyle(
+                fontSize: 18,
+                color: Color(0xFF0D0D0D),
+                fontFamily: 'Helvetica',
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+          const SizedBox(height: 20),
+          // Gambar 1 - dikecilkan dengan flex: 2 (sebelumnya 3)
+          Flexible(
+            flex: 2, // Dikurangi dari 3 menjadi 2
+            child: Image.asset(
+              data.image,
+              fit: BoxFit.contain,
+            ),
+          ),
+          const SizedBox(height: 15), // Spacing antara gambar dikurangi
+          // Description di tengah
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24.0),
+            child: Text(
+              data.description,
+              style: const TextStyle(
+                fontSize: 16,
+                color: Color(0xFF0D0D0D),
+                fontFamily: 'Helvetica',
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+          const SizedBox(height: 15), // Spacing antara description dan gambar 2
+          // Gambar 2 - dikecilkan dengan flex: 2 (sebelumnya 3)
+          Flexible(
+            flex: 2, // Dikurangi dari 3 menjadi 2
+            child: Image.asset(
+              data.image2!,
+              fit: BoxFit.contain,
+            ),
+          ),
+          const SizedBox(height: 15), // Spacing bawah dikurangi
+          
+          // Swipe hint jika ada
+          if (data.showSwipeHint)
+            Padding(
+              padding: const EdgeInsets.only(top: 10.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.swipe,
+                    color: const Color(0xFF0D0D0D),
+                    size: 24,
                   ),
-                  children: [
-                    TextSpan(text: data.title),
-                    if (data.subtitle.isNotEmpty)
-                      TextSpan(
-                        text: '\n${data.subtitle}',
-                        style: const TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.normal,
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-
-            const SizedBox(height: 30),
-
-            // Gambar pertama (Double-Tap)
-            Expanded(
-              child: Center(
-                child: Image.asset(
-                  data.image,
-                  fit: BoxFit.contain,
-                ),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Geser ke kanan untuk lanjut',
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: Color(0xFF0D0D0D),
+                      fontFamily: 'Helvetica',
+                    ),
+                  ),
+                ],
               ),
             ),
-
-            const SizedBox(height: 20),
-
-            // Description
-            if (data.description.isNotEmpty)
-              Text(
-                data.description,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'Helvetica',
-                  color: Color(0xFF0D0D0D),
-                ),
-              ),
-
-            const SizedBox(height: 20),
-
-            // Gambar kedua (Long Press)
-            Expanded(
-              child: Center(
-                child: Image.asset(
-                  data.image2!,
-                  fit: BoxFit.contain,
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 30),
-          ],
-        ),
+        
+          const Spacer(), // Untuk mendorong konten ke atas
+        ],
       );
     }
 
@@ -536,9 +556,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
           const SizedBox(height: 40),
 
-          // Image
+          // Image - dikecilkan agar swipe hint terlihat lebih baik
           if (data.image.isNotEmpty)
-            Expanded(
+            Flexible(
+              flex: 4,
               child: Center(
                 child: Image.asset(
                   data.image,

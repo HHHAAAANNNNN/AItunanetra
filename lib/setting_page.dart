@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:aitunanetra/preferences_service.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 
 class SettingPage extends StatefulWidget {
   const SettingPage({super.key});
@@ -23,6 +24,9 @@ class _SettingPageState extends State<SettingPage> {
   double _ttsSpeed = 0.8; // 0.3, 0.5, 0.8
   double _ttsVolume = 1.0; // 0.3, 0.7, 1.0
 
+  // FlutterTts untuk audio panduan
+  final FlutterTts flutterTts = FlutterTts();
+
   // Warna default aplikasi
   Color _bgColor1 = const Color(0xFFEEF26B);
   Color _bgColor2 = const Color(0xFFEAF207);
@@ -33,12 +37,35 @@ class _SettingPageState extends State<SettingPage> {
   void initState() {
     super.initState();
     _loadSettings();
+    _playSettingsGuide();
     
     // Maintain fullscreen mode
     SystemChrome.setEnabledSystemUIMode(
       SystemUiMode.immersiveSticky,
       overlays: [],
     );
+  }
+
+  Future<void> _playSettingsGuide() async {
+    // Tunggu sebentar untuk memastikan TTS sudah siap
+    await Future.delayed(const Duration(milliseconds: 500));
+    
+    try {
+      await flutterTts.setLanguage("id-ID");
+      await flutterTts.setSpeechRate(0.6);
+      await flutterTts.setVolume(1.0);
+      await flutterTts.setPitch(1.0);
+      
+      await flutterTts.speak("Berikut adalah halaman pengaturan. Scroll ke bawah untuk opsi lebih lanjut.");
+    } catch (e) {
+      // Jika TTS gagal, tidak masalah
+    }
+  }
+
+  @override
+  void dispose() {
+    flutterTts.stop();
+    super.dispose();
   }
 
   Future<void> _loadSettings() async {
@@ -62,12 +89,6 @@ class _SettingPageState extends State<SettingPage> {
     setState(() {
       _alwaysPlayDashboardGuide = value;
     });
-  }
-
-  // dispose berfungsi untuk mematikan animasi ketika aplikasi ditutup
-  @override
-  void dispose() {
-    super.dispose();
   }
 
   @override

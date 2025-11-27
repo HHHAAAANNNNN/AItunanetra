@@ -26,8 +26,6 @@ class _DashboardPageState extends State<DashboardPage> {
   bool _isSubtitleOn = false; //default subtitle mati
   final AudioPlayer _audioPlayer = AudioPlayer();
   FlutterTts flutterTts = FlutterTts();
-  bool _showMenu = false; //default menu tertutup
-  bool _showMenuItems = false; //default items di dalam menu belum muncul
   DateTime? _lastBackPressed; //untuk tracking double tap back button
   double _subtitleBoxHeight = 0.18; // Rasio tinggi subtitle box (default lebih kecil ~18%)
   bool _animateSubtitle = true; // Flag untuk mengontrol apakah perlu animasi atau tidak
@@ -91,9 +89,11 @@ class _DashboardPageState extends State<DashboardPage> {
       
       String guideText = "Selamat datang di AI Tunanetra. "
           "Di bagian bawah layar terdapat tiga tombol. "
-          "Dari kiri ke kanan adalah tombol senter, tombol teks, dan tombol mikrofon. "
-          "Di pojok kanan atas terdapat tombol menu yang menampilkan pengaturan untuk menyesuaikan aplikasi dan tombol keluar untuk menutup aplikasi. "
-          "Di pojok kiri atas terdapat tombol panduan untuk melihat kembali cara penggunaan aplikasi.";
+          "Dari kiri ke kanan adalah senter, teks, dan mikrofon. "
+          "Di bagian atas layar juga terdapat tiga tombol. "
+          "Pojok kiri atas adalah panduan untuk melihat kembali cara penggunaan aplikasi. "
+          "Tengah atas adalah pengaturan untuk menyesuaikan aplikasi. "
+          "Pojok kanan atas adalah keluar untuk menutup aplikasi.";
       
       await flutterTts.speak(guideText);
       
@@ -451,125 +451,53 @@ class _DashboardPageState extends State<DashboardPage> {
                 ),
               ),
 
-            //menu di pojok kanan atas
-            Positioned(
-              top: 40,
-              right: 20,
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 300), // Durasi transisi dibukanya menu
-                curve: Curves.easeInOut,
-                width: 50,
-                height: _showMenu ? 150.0 : 50.0, //tinggi berubah dari 50 ke 150 jika ditekan (2 buttons: Setting + Exit)
-                decoration: BoxDecoration(
-                  color: const Color(0xBF818C2E),
-                  borderRadius: BorderRadius.circular(_showMenu ? 25.0 : 25.0),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0x4D000000), // Black with 30% opacity
-                      spreadRadius: 1,
-                      blurRadius: 3,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          _showMenu = !_showMenu;
-                          if (_showMenu) {
-                            // Jika membuka menu, tampilkan item setelah transisi container
-                            Future.delayed(const Duration(milliseconds: 200), () {
-                              if (mounted && _showMenu) {
-                                setState(() {
-                                  _showMenuItems = true;
-                                });
-                              }
-                            });
-                          } else {
-                            // Jika menutup menu, sembunyikan item
-                            setState(() {
-                              _showMenuItems = false; // Fade out menu items
-                            });
-                          }
-                        });
-                      },
-                      child: Container(
-                        width: 50,
-                        height: 50,
-                        color: Colors.transparent,
-                        child: Center(
-                          child: Image.asset(
-                            'assets/logo.png',
-                            width: 30,
-                            height: 30,
-                          ),
-                        ),
-                      ),
-                    ),
-                    // Menu item (Setting & Exit) hanya muncul saat _showMenuItems true
-                    if (_showMenu) // Pastikan container sudah membesar sebelum mencoba menampilkan item
-                      AnimatedOpacity(
-                        opacity: _showMenuItems ? 1.0 : 0.0,
-                        duration: const Duration(milliseconds: 300), // Durasi fade in/out item
-                        curve: Curves.easeInOut,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            const SizedBox(height: 1),
-                            IconButton( //icon button setting
-                              icon: const Icon(Icons.settings, color: Color(0xFF0D0D0D), size: 24),
-                              onPressed: () async {
-                                // Stop audio panduan sebelum navigasi ke setting
-                                await flutterTts.stop();
-                                Navigator.of(context).push(
-                                  MaterialPageRoute(builder: (context) => const SettingPage()),
-                                );
-                              },
-                              tooltip: 'Setting',
-                            ),
-                            IconButton( //icon button exit app
-                              icon: const Icon(Icons.exit_to_app, color: Color(0xFF0D0D0D), size: 24),
-                              onPressed: () async {
-                                // Trigger exit - sama seperti back button 2x
-                                await flutterTts.speak("Keluar dari aplikasi");
-                                await Future.delayed(const Duration(milliseconds: 500));
-                                SystemNavigator.pop();
-                              },
-                              tooltip: 'Keluar',
-                            ),
-                          ],
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-            ),
-
+            // 3 Button di bagian atas: Panduan (kiri), Pengaturan (tengah), Keluar (kanan)
+            
             // Button Panduan di pojok kiri atas
             Positioned(
               top: 40,
               left: 20,
-              child: Container(
-                decoration: BoxDecoration(
-                  color: const Color(0xFFEEF26B),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: const Color(0xFF0D0D0D), width: 2),
-                ),
-                child: IconButton(
-                  icon: const Icon(Icons.help_outline, color: Color(0xFF0D0D0D), size: 30),
-                  onPressed: () async {
-                    await flutterTts.speak("Membuka panduan penggunaan");
-                    await Future.delayed(const Duration(milliseconds: 500));
-                    // Navigate to onboarding screen with audio enabled
-                    Navigator.of(context).pushReplacement(
-                      MaterialPageRoute(builder: (context) => const OnboardingScreen(playAudio: true)),
-                    );
-                  },
-                  tooltip: 'Panduan',
-                ),
+              child: _buildTopButton(
+                icon: Icons.help_outline,
+                label: 'Panduan',
+                onPressed: () async {
+                  await flutterTts.speak("Membuka panduan penggunaan");
+                  await Future.delayed(const Duration(milliseconds: 500));
+                  Navigator.of(context).pushReplacement(
+                    MaterialPageRoute(builder: (context) => const OnboardingScreen(playAudio: true)),
+                  );
+                },
+              ),
+            ),
+
+            // Button Pengaturan di tengah atas
+            Positioned(
+              top: 40,
+              left: MediaQuery.of(context).size.width / 2 - 45, // Center (90px width / 2)
+              child: _buildTopButton(
+                icon: Icons.settings,
+                label: 'Pengaturan',
+                onPressed: () async {
+                  await flutterTts.stop();
+                  Navigator.of(context).push(
+                    MaterialPageRoute(builder: (context) => const SettingPage()),
+                  );
+                },
+              ),
+            ),
+
+            // Button Keluar di pojok kanan atas
+            Positioned(
+              top: 40,
+              right: 20,
+              child: _buildTopButton(
+                icon: Icons.exit_to_app,
+                label: 'Keluar',
+                onPressed: () async {
+                  await flutterTts.speak("Keluar dari aplikasi");
+                  await Future.delayed(const Duration(milliseconds: 500));
+                  SystemNavigator.pop();
+                },
               ),
             ),
 
@@ -592,24 +520,27 @@ class _DashboardPageState extends State<DashboardPage> {
                     icon: _isFlashOn ? Icons.flashlight_on : Icons.flashlight_off,
                     onPressed: _toggleFlashlight,
                     backgroundColor: _isFlashOn ? const Color(0xFFFFEB3B) : const Color(0xFFEEF26B),
+                    label: 'Senter',
                   ),
                   
-                  const SizedBox(width: 20), // Spacing antar button
+                  const SizedBox(width: 60), // Spacing antar button diperbesar agar tidak berdempet
                   
                   // Subtitle button (tengah)
                   _buildActionButton(
                     icon: _isSubtitleOn ? Icons.subtitles : Icons.subtitles_outlined,
                     onPressed: _toggleSubtitle,
                     backgroundColor: const Color(0xFFEEF26B),
+                    label: 'Teks',
                   ),
                   
-                  const SizedBox(width: 20), // Spacing antar button
+                  const SizedBox(width: 60), // Spacing antar button diperbesar agar tidak berdempet
                   
                   // Microphone button (kanan)
                   _buildActionButton(
                     icon: _isMicOn ? Icons.mic : Icons.mic_off,
                     onPressed: _toggleMic,
                     backgroundColor: _isMicOn ? const Color(0xFFEF4444) : const Color(0xFFEEF26B),
+                    label: 'Mikrofon',
                   ),
                 ],
               ),
@@ -622,30 +553,98 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
-  // Helper method untuk membuat tombol aksi bawah dengan custom background color
+  // Helper method untuk membuat tombol aksi bawah dengan custom background color dan label terintegrasi (untuk TalkBack)
   Widget _buildActionButton({
     required IconData icon, 
     required VoidCallback onPressed,
+    required String label,
     Color backgroundColor = const Color(0xFFEEF26B),
   }) {
-    return Container(
-      width: 60,
-      height: 60,
-      decoration: BoxDecoration(
-        color: backgroundColor, // Custom background color
-        borderRadius: BorderRadius.circular(30),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0x4D000000), // Black with 30% opacity
-            spreadRadius: 1,
-            blurRadius: 3,
-            offset: const Offset(0, 2),
+    return Semantics(
+      button: true,
+      label: label,
+      child: InkWell(
+        onTap: onPressed,
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: backgroundColor, // Custom background color
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0x4D000000), // Black with 30% opacity
+                spreadRadius: 1,
+                blurRadius: 3,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
-        ],
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, color: const Color(0xFF0D0D0D), size: 30),
+              const SizedBox(height: 6),
+              Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF0D0D0D),
+                  fontFamily: 'Helvetica',
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
-      child: IconButton(
-        icon: Icon(icon, color: const Color(0xFF0D0D0D), size: 30),
-        onPressed: onPressed,
+    );
+  }
+
+  // Helper method untuk membuat button atas dengan icon dan label terintegrasi (untuk TalkBack)
+  Widget _buildTopButton({
+    required IconData icon,
+    required String label,
+    required VoidCallback onPressed,
+  }) {
+    return Semantics(
+      button: true,
+      label: label,
+      child: InkWell(
+        onTap: onPressed,
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+          decoration: BoxDecoration(
+            color: const Color(0xFFEEF26B),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: const Color(0xFF0D0D0D), width: 2),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0x4D000000),
+                spreadRadius: 1,
+                blurRadius: 3,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, color: const Color(0xFF0D0D0D), size: 24),
+              const SizedBox(height: 4),
+              Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF0D0D0D),
+                  fontFamily: 'Helvetica',
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
