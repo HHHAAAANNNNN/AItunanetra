@@ -9,16 +9,13 @@ import 'package:shared_preferences/shared_preferences.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
-  // Initialize SharedPreferences before app starts
   await SharedPreferences.getInstance();
   
-  // Set fullscreen mode - hide status bar and navigation bar
   SystemChrome.setEnabledSystemUIMode(
     SystemUiMode.immersiveSticky,
     overlays: [],
   );
-  
-  // Set preferred orientations (optional - lock to portrait)
+
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
@@ -35,7 +32,7 @@ class MainApp extends StatelessWidget {
     return MaterialApp(
       title: 'Aplikasi Login',
       theme: ThemeData(
-        fontFamily: 'Helvetica', // aplikasi mobile cenderung menggunakan Helvetica
+        fontFamily: 'Helvetica', 
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
@@ -44,7 +41,6 @@ class MainApp extends StatelessWidget {
   }
 }
 
-// Initial Splash Screen dengan logo AITUNANETRA
 class InitialSplashScreen extends StatefulWidget {
   const InitialSplashScreen({super.key});
 
@@ -73,23 +69,18 @@ class _InitialSplashScreenState extends State<InitialSplashScreen> with SingleTi
       ),
     );
 
-    // Start the flow
     _startSplashSequence();
   }
 
   Future<void> _startSplashSequence() async {
-    // Wait 1 second
     await Future.delayed(const Duration(milliseconds: 1000));
     
     if (!mounted) return;
     
-    // Start fade animation
     _controller.forward();
     
-    // Wait for fade to complete
     await Future.delayed(const Duration(milliseconds: 1000));
     
-    // Navigate
     if (mounted && !_hasNavigated) {
       _hasNavigated = true;
       _navigateToNextScreen();
@@ -103,12 +94,10 @@ class _InitialSplashScreenState extends State<InitialSplashScreen> with SingleTi
       if (!mounted) return;
       
       if (shouldShowOnboarding) {
-        // Show onboarding
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (context) => const OnboardingScreen()),
         );
       } else {
-        // Skip directly to dashboard (login removed based on user feedback)
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (context) => const DashboardPage()),
         );
@@ -187,7 +176,6 @@ class _InitialSplashScreenState extends State<InitialSplashScreen> with SingleTi
   }
 }
 
-// Onboarding Screen dengan swipeable pages
 class OnboardingScreen extends StatefulWidget {
   final bool playAudio;
   
@@ -218,12 +206,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 
   Future<void> _playWelcomeAudio() async {
-    await flutterTts.setLanguage("id-ID"); // Indonesian
-    await flutterTts.setSpeechRate(0.6); // Speed (0.6 = moderate)
-    await flutterTts.setVolume(1.0); // Volume
-    await flutterTts.setPitch(1.0); // Pitch
-    
-    // Play welcome message in Indonesian
+    await flutterTts.setLanguage("id-ID");
+    await flutterTts.setSpeechRate(0.6);
+    await flutterTts.setVolume(1.0);
+    await flutterTts.setPitch(1.0);
+
     await flutterTts.speak(
       "disarankan untuk menyalakan suara ponsel untuk penggunaan aplikasi yang lebih baik."
       "pada pojok kanan-atas terdapat tombol untuk melewati panduan ini."
@@ -270,7 +257,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   ];
 
   void _navigateToDashboard() async {
-    // Mark first run as completed
     await PreferencesService.setFirstRunCompleted();
     
     if (mounted) {
@@ -298,7 +284,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         ),
         child: Stack(
           children: [
-            // PageView untuk swipe
             PageView.builder(
               controller: _pageController,
               onPageChanged: (index) {
@@ -312,7 +297,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               },
             ),
 
-            // Skip button (X) di pojok kanan atas
             Positioned(
               top: 50,
               right: 24,
@@ -333,21 +317,18 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               ),
             ),
 
-            // Page indicator dan navigation buttons di bawah
             Positioned(
-              bottom: 20, // Diturunkan dari 40 ke 20 untuk mendekati bottom corner
+              bottom: 20,
               left: 0,
               right: 0,
               child: Column(
                 children: [
-                  // Navigation buttons (Previous / Next)
                   if (_currentPage > 0 || _currentPage < _pages.length - 1)
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 24.0),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          // Previous button
                           if (_currentPage > 0)
                             ElevatedButton.icon(
                               onPressed: () {
@@ -368,9 +349,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                               ),
                             )
                           else
-                            const SizedBox(width: 120), // Spacer when no previous button
+                            const SizedBox(width: 120), 
                           
-                          // Next button
                           if (_currentPage < _pages.length - 1)
                             ElevatedButton.icon(
                               onPressed: () {
@@ -391,14 +371,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                               ),
                             )
                           else
-                            const SizedBox(width: 120), // Spacer when no next button
+                            const SizedBox(width: 120), 
                         ],
                       ),
                     ),
                   
-                  const SizedBox(height: 12), // Dikurangi dari 16 ke 12
+                  const SizedBox(height: 12), 
                   
-                  // Page indicator dots
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: List.generate(
@@ -416,7 +395,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 
   Widget _buildPage(OnboardingData data) {
-    // Jika hanya menampilkan gambar (untuk page 4 dan 5)
     if (data.showImage && data.title.isEmpty) {
       return Center(
         child: Padding(
@@ -429,12 +407,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       );
     }
 
-    // Jika menampilkan dual images (untuk page 3)
     if (data.showDualImages && data.image2 != null) {
       return Column(
         children: [
           const SizedBox(height: 30),
-          // Title
           Text(
             data.title,
             style: const TextStyle(
@@ -446,7 +422,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 10),
-          // Subtitle
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24.0),
             child: Text(
@@ -460,16 +435,15 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             ),
           ),
           const SizedBox(height: 20),
-          // Gambar 1 - dikecilkan dengan flex: 2 (sebelumnya 3)
           Flexible(
-            flex: 2, // Dikurangi dari 3 menjadi 2
+            flex: 2, 
             child: Image.asset(
               data.image,
               fit: BoxFit.contain,
             ),
           ),
-          const SizedBox(height: 15), // Spacing antara gambar dikurangi
-          // Description di tengah
+          const SizedBox(height: 15), 
+          
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24.0),
             child: Text(
@@ -482,18 +456,17 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               textAlign: TextAlign.center,
             ),
           ),
-          const SizedBox(height: 15), // Spacing antara description dan gambar 2
-          // Gambar 2 - dikecilkan dengan flex: 2 (sebelumnya 3)
+          const SizedBox(height: 15), 
+
           Flexible(
-            flex: 2, // Dikurangi dari 3 menjadi 2
+            flex: 2, 
             child: Image.asset(
               data.image2!,
               fit: BoxFit.contain,
             ),
           ),
-          const SizedBox(height: 15), // Spacing bawah dikurangi
-          
-          // Swipe hint jika ada
+          const SizedBox(height: 15), 
+
           if (data.showSwipeHint)
             Padding(
               padding: const EdgeInsets.only(top: 10.0),
@@ -518,18 +491,16 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               ),
             ),
         
-          const Spacer(), // Untuk mendorong konten ke atas
+          const Spacer(), 
         ],
       );
     }
 
-    // Layout normal dengan title, image, description
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 60.0),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // Title
           if (data.title.isNotEmpty)
             RichText(
               textAlign: TextAlign.center,
@@ -556,7 +527,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
           const SizedBox(height: 40),
 
-          // Image - dikecilkan agar swipe hint terlihat lebih baik
           if (data.image.isNotEmpty)
             Flexible(
               flex: 4,
@@ -568,9 +538,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               ),
             ),
 
-          const SizedBox(height: 20), // Dikurangi dari 40 ke 20 untuk "Deteksi terjadi secara otomatis" & "Arahkan kamera" lebih dekat dengan gambar
+          const SizedBox(height: 20), 
 
-          // Description
           if (data.description.isNotEmpty)
             Text(
               data.description,
@@ -583,10 +552,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               ),
             ),
 
-          // Swipe hint untuk halaman pertama
           if (data.showSwipeHint)
             Padding(
-              padding: const EdgeInsets.only(top: 10.0), // Dikurangi dari 20 ke 10 agar "Geser untuk lanjut" lebih dekat dengan teks di atasnya
+              padding: const EdgeInsets.only(top: 10.0), 
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -611,11 +579,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
           const SizedBox(height: 40),
 
-          // Button "Dengar Lagi" hanya di page terakhir
           if (data.showButton)
             ElevatedButton.icon(
               onPressed: () async {
-                // Replay audio panduan
+                
                 await _playWelcomeAudio();
               },
               icon: const Icon(Icons.replay, size: 20),
@@ -640,7 +607,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
           if (data.showButton) const SizedBox(height: 12),
 
-          // Button "Anda Siap?" hanya di page terakhir
+          
           if (data.showButton)
             ElevatedButton(
               onPressed: _navigateToDashboard,
@@ -680,7 +647,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 }
 
-// Data model untuk onboarding pages
+
 class OnboardingData {
   final String image;
   final String title;
@@ -688,9 +655,9 @@ class OnboardingData {
   final String description;
   final bool showButton;
   final bool showImage;
-  final bool showDualImages; // Property untuk dual images
-  final String? image2; // Property untuk gambar kedua (optional)
-  final bool showSwipeHint; // Property untuk menampilkan hint geser
+  final bool showDualImages; 
+  final String? image2; 
+  final bool showSwipeHint; 
 
   OnboardingData({
     required this.image,
