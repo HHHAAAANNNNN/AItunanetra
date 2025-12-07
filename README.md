@@ -89,10 +89,11 @@ flutter pub get
 ```
 
 This will download and install all dependencies listed in `pubspec.yaml`, including:
-- Camera functionality
-- Permission handler
-- Audio players
-- Text-to-speech capabilities
+- `camera` - Camera functionality for object recognition
+- `permission_handler` - Managing device permissions
+- `audioplayers` - Audio playback capabilities
+- `flutter_tts` - Text-to-speech functionality
+- `shared_preferences` - Local data storage
 - And other required packages
 
 ### Step 3: Prepare Your Mobile Device
