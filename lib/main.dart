@@ -238,6 +238,19 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     );
   }
 
+  // Play audio feedback untuk button actions
+  Future<void> _playButtonFeedback(String message) async {
+    try {
+      await flutterTts.setLanguage("id-ID");
+      await flutterTts.setSpeechRate(_ttsSpeed * 1.3);
+      await flutterTts.setVolume(_ttsVolume);
+      await flutterTts.setPitch(1.0);
+      await flutterTts.speak(message);
+    } catch (e) {
+      // If TTS fails, continue without audio
+    }
+  }
+
   final List<OnboardingData> _pages = [
     OnboardingData(
       image: 'assets/SplashScreen2.png',
@@ -319,7 +332,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               child: Material(
                 color: Colors.transparent,
                 child: InkWell(
-                  onTap: _navigateToDashboard,
+                  onTap: () async {
+                    await _playButtonFeedback('Melewati panduan');
+                    await Future.delayed(const Duration(milliseconds: 800));
+                    _navigateToDashboard();
+                  },
                   borderRadius: BorderRadius.circular(20),
                   child: Container(
                     padding: const EdgeInsets.all(8),
@@ -347,7 +364,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         children: [
                           if (_currentPage > 0)
                             ElevatedButton.icon(
-                              onPressed: () {
+                              onPressed: () async {
+                                await _playButtonFeedback('Halaman sebelumnya');
+                                await Future.delayed(const Duration(milliseconds: 600));
                                 _pageController.previousPage(
                                   duration: const Duration(milliseconds: 300),
                                   curve: Curves.easeInOut,
@@ -369,7 +388,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           
                           if (_currentPage < _pages.length - 1)
                             ElevatedButton.icon(
-                              onPressed: () {
+                              onPressed: () async {
+                                await _playButtonFeedback('Halaman selanjutnya');
+                                await Future.delayed(const Duration(milliseconds: 600));
                                 _pageController.nextPage(
                                   duration: const Duration(milliseconds: 300),
                                   curve: Curves.easeInOut,
@@ -598,7 +619,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           if (data.showButton)
             ElevatedButton.icon(
               onPressed: () async {
-                
+                await _playButtonFeedback('Memutar audio kembali. Mohon tunggu sebentar.');
+                await Future.delayed(const Duration(milliseconds: 2500));
                 await _playWelcomeAudio();
               },
               icon: const Icon(Icons.replay, size: 20),
@@ -626,7 +648,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           
           if (data.showButton)
             ElevatedButton(
-              onPressed: _navigateToDashboard,
+              onPressed: () async {
+                await _playButtonFeedback('Memasuki halaman utama');
+                await Future.delayed(const Duration(milliseconds: 1200));
+                _navigateToDashboard();
+              },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF0D0D0D),
                 shape: RoundedRectangleBorder(

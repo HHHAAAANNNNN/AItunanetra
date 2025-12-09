@@ -116,6 +116,22 @@ class _SettingPageState extends State<SettingPage> {
     await PreferencesService.setTtsVolume(_ttsVolume);
   }
 
+  // Play audio feedback untuk button actions
+  Future<void> _playButtonFeedback(String message) async {
+    try {
+      final ttsSpeed = await PreferencesService.getTtsSpeed();
+      final ttsVolume = await PreferencesService.getTtsVolume();
+      
+      await flutterTts.setLanguage("id-ID");
+      await flutterTts.setSpeechRate(ttsSpeed * 1.3);
+      await flutterTts.setVolume(ttsVolume);
+      await flutterTts.setPitch(1.0);
+      await flutterTts.speak(message);
+    } catch (e) {
+      // If TTS fails, continue without audio
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -285,7 +301,9 @@ class _SettingPageState extends State<SettingPage> {
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
                         ElevatedButton(
-                          onPressed: () {
+                          onPressed: () async {
+                            await _playButtonFeedback('Batal');
+                            await Future.delayed(const Duration(milliseconds: 600));
                             Navigator.of(context).pop(); // Kembali ke halaman sebelumnya (dashboard)
                           },
                           style: ElevatedButton.styleFrom(
@@ -307,6 +325,8 @@ class _SettingPageState extends State<SettingPage> {
                         ),
                         ElevatedButton(
                           onPressed: () async {
+                            await _playButtonFeedback('Menyimpan pengaturan');
+                            await Future.delayed(const Duration(milliseconds: 1000));
                             await _saveSettings();
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(content: Text('Pengaturan disimpan!')),
@@ -341,7 +361,9 @@ class _SettingPageState extends State<SettingPage> {
               left: 20,
               child: IconButton(
                 icon: Icon(Icons.arrow_back, color: _textColor, size: 30),
-                onPressed: () {
+                onPressed: () async {
+                  await _playButtonFeedback('Kembali');
+                  await Future.delayed(const Duration(milliseconds: 600));
                   Navigator.of(context).pop(); // Kembali ke halaman sebelumnya (Dashboard)
                 },
                 tooltip: 'Kembali',
