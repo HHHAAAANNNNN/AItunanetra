@@ -365,8 +365,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           if (_currentPage > 0)
                             ElevatedButton.icon(
                               onPressed: () async {
-                                await _playButtonFeedback('Halaman sebelumnya');
-                                await Future.delayed(const Duration(milliseconds: 600));
                                 _pageController.previousPage(
                                   duration: const Duration(milliseconds: 300),
                                   curve: Curves.easeInOut,
@@ -389,8 +387,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           if (_currentPage < _pages.length - 1)
                             ElevatedButton.icon(
                               onPressed: () async {
-                                await _playButtonFeedback('Halaman selanjutnya');
-                                await Future.delayed(const Duration(milliseconds: 600));
                                 _pageController.nextPage(
                                   duration: const Duration(milliseconds: 300),
                                   curve: Curves.easeInOut,
