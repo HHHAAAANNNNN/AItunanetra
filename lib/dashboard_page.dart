@@ -30,7 +30,6 @@ class _DashboardPageState extends State<DashboardPage> {
   double _subtitleBoxHeight = 0.18; // Rasio tinggi subtitle box (default lebih kecil ~18%)
   bool _animateSubtitle = true; // Flag untuk mengontrol apakah perlu animasi atau tidak
   bool _isLongPressActive = false; // Track long press state
-  bool _hasPlayedWelcomeGuide = false; // Track apakah sudah memainkan audio panduan
   
   // Settings
   bool _gesturesEnabled = true;
@@ -99,9 +98,12 @@ class _DashboardPageState extends State<DashboardPage> {
   Future<void> _playWelcomeGuide() async {
     // Cek apakah user mengaktifkan "always play dashboard guide"
     final alwaysPlayGuide = await PreferencesService.getAlwaysPlayDashboardGuide();
+    final hasPlayedBefore = await PreferencesService.getHasPlayedDashboardGuide();
     
-    // Jika tidak always play dan sudah pernah dimainkan, skip
-    if (!alwaysPlayGuide && _hasPlayedWelcomeGuide) return;
+    // Jika toggle OFF dan sudah pernah dimainkan sebelumnya, skip
+    if (!alwaysPlayGuide && hasPlayedBefore) {
+      return;
+    }
     
     // Tunggu sebentar untuk memastikan TTS sudah siap
     await Future.delayed(const Duration(milliseconds: 3000));
@@ -122,12 +124,8 @@ class _DashboardPageState extends State<DashboardPage> {
       
       await flutterTts.speak(guideText);
       
-      // Hanya set flag jika tidak always play (untuk first time only behavior)
-      if (!alwaysPlayGuide) {
-        setState(() {
-          _hasPlayedWelcomeGuide = true;
-        });
-      }
+      // Tandai bahwa guide sudah pernah dimainkan
+      await PreferencesService.setHasPlayedDashboardGuide(true);
     } catch (e) {
       // Jika TTS gagal, tidak masalah
     }
@@ -492,7 +490,7 @@ class _DashboardPageState extends State<DashboardPage> {
                 icon: Icons.help_outline,
                 label: 'Panduan',
                 onPressed: () async {
-                  await flutterTts.speak("Membuka panduan penggunaan");
+                  await flutterTts.speak("Membuka panduan penggunaan. Tunggu sebentar");
                   await Future.delayed(const Duration(milliseconds: 3000));
                   Navigator.of(context).pushReplacement(
                     MaterialPageRoute(builder: (context) => const OnboardingScreen(playAudio: true)),
@@ -510,6 +508,9 @@ class _DashboardPageState extends State<DashboardPage> {
                 label: 'Pengaturan',
                 onPressed: () async {
                   await flutterTts.stop();
+                  await _playButtonFeedback('Membuka pengaturan');
+                  // Tunggu audio selesai sebelum pindah halaman
+                  await Future.delayed(const Duration(milliseconds: 1500));
                   await Navigator.of(context).push(
                     MaterialPageRoute(builder: (context) => const SettingPage()),
                   );

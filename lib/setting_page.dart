@@ -47,16 +47,20 @@ class _SettingPageState extends State<SettingPage> {
   }
 
   Future<void> _playSettingsGuide() async {
+    // Load TTS settings first
+    final ttsSpeed = await PreferencesService.getTtsSpeed();
+    final ttsVolume = await PreferencesService.getTtsVolume();
+    
     // Tunggu sebentar untuk memastikan TTS sudah siap
     await Future.delayed(const Duration(milliseconds: 500));
     
     try {
       await flutterTts.setLanguage("id-ID");
-      await flutterTts.setSpeechRate(0.6);
-      await flutterTts.setVolume(1.0);
+      await flutterTts.setSpeechRate(ttsSpeed);
+      await flutterTts.setVolume(ttsVolume);
       await flutterTts.setPitch(1.0);
       
-      await flutterTts.speak("Berikut adalah halaman pengaturan. Scroll ke bawah untuk opsi lebih lanjut.");
+      await flutterTts.speak("Scroll ke bawah untuk opsi lebih lanjut.");
     } catch (e) {
       // Jika TTS gagal, tidak masalah
     }

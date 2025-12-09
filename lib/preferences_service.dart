@@ -10,6 +10,7 @@ class PreferencesService {
   static const String _keyMicrophoneGestureEnabled = 'microphone_gesture_enabled';
   static const String _keyTtsSpeed = 'tts_speed';
   static const String _keyTtsVolume = 'tts_volume';
+  static const String _keyHasPlayedDashboardGuide = 'has_played_dashboard_guide';
 
   // Check if this is the first run
   static Future<bool> isFirstRun() async {
@@ -105,6 +106,18 @@ class PreferencesService {
   static Future<void> setTtsVolume(double value) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setDouble(_keyTtsVolume, value);
+  }
+
+  // Get "Has played dashboard guide" flag
+  static Future<bool> getHasPlayedDashboardGuide() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_keyHasPlayedDashboardGuide) ?? false;
+  }
+
+  // Set "Has played dashboard guide" flag
+  static Future<void> setHasPlayedDashboardGuide(bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_keyHasPlayedDashboardGuide, value);
   }
 
   // Check if onboarding should be shown (first run OR always show enabled)

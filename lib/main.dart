@@ -189,13 +189,26 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   final PageController _pageController = PageController();
   int _currentPage = 0;
   final FlutterTts flutterTts = FlutterTts();
+  double _ttsSpeed = 0.5;
+  double _ttsVolume = 1.0;
 
   @override
   void initState() {
     super.initState();
+    _loadSettings();
     if (widget.playAudio) {
       _playWelcomeAudio();
     }
+  }
+
+  Future<void> _loadSettings() async {
+    final ttsSpeed = await PreferencesService.getTtsSpeed();
+    final ttsVolume = await PreferencesService.getTtsVolume();
+    
+    setState(() {
+      _ttsSpeed = ttsSpeed;
+      _ttsVolume = ttsVolume;
+    });
   }
 
   @override
@@ -210,8 +223,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     await Future.delayed(const Duration(milliseconds: 3000));
     
     await flutterTts.setLanguage("id-ID");
-    await flutterTts.setSpeechRate(0.6);
-    await flutterTts.setVolume(1.0);
+    await flutterTts.setSpeechRate(_ttsSpeed);
+    await flutterTts.setVolume(_ttsVolume);
     await flutterTts.setPitch(1.0);
 
     await flutterTts.speak(
