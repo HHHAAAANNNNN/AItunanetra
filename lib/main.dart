@@ -206,18 +206,21 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 
   Future<void> _playWelcomeAudio() async {
+    // Tambahkan delay untuk memastikan TTS engine dan UI sudah siap
+    await Future.delayed(const Duration(milliseconds: 3000));
+    
     await flutterTts.setLanguage("id-ID");
     await flutterTts.setSpeechRate(0.6);
     await flutterTts.setVolume(1.0);
     await flutterTts.setPitch(1.0);
 
     await flutterTts.speak(
-      "disarankan untuk menyalakan suara ponsel untuk penggunaan aplikasi yang lebih baik."
-      "pada pojok kanan-atas terdapat tombol untuk melewati panduan ini."
+      "Disarankan untuk menyalakan suara ponsel untuk penggunaan aplikasi yang lebih baik. "
+      "Pada pojok kanan atas terdapat tombol untuk melewati panduan ini. "
       "Selamat datang di AI Tunanetra. Aplikasi ini membantu kamu berinteraksi dengan lingkungan berbasis kamera pada ponsel. "
       "Geser layar untuk melihat panduan berikutnya, atau tekan tombol selanjutnya. "
       "Arahkan saja kamera dan pemindaian akan otomatis dijalankan. "
-      "Ketuk layar dua kali untuk menyalakan atau mematikan lampu senter, dan tekan tahan layar untuk mengaktifkan mikrofon."
+      "Ketuk layar dua kali untuk menyalakan atau mematikan lampu senter, dan tekan tahan layar untuk mengaktifkan mikrofon. "
       "Jika sudah siap menggunakan aplikasi, tekan tombol di bawah pada halaman terakhir."
     );
   }

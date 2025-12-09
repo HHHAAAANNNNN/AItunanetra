@@ -71,9 +71,20 @@ class _SettingPageState extends State<SettingPage> {
   Future<void> _loadSettings() async {
     final alwaysShow = await PreferencesService.getAlwaysShowOnboarding();
     final alwaysPlayGuide = await PreferencesService.getAlwaysPlayDashboardGuide();
+    final gesturesEnabled = await PreferencesService.getGesturesEnabled();
+    final flashlightGesture = await PreferencesService.getFlashlightGestureEnabled();
+    final microphoneGesture = await PreferencesService.getMicrophoneGestureEnabled();
+    final ttsSpeed = await PreferencesService.getTtsSpeed();
+    final ttsVolume = await PreferencesService.getTtsVolume();
+    
     setState(() {
       _alwaysShowOnboarding = alwaysShow;
       _alwaysPlayDashboardGuide = alwaysPlayGuide;
+      _gesturesEnabled = gesturesEnabled;
+      _flashlightGestureEnabled = flashlightGesture;
+      _microphoneGestureEnabled = microphoneGesture;
+      _ttsSpeed = ttsSpeed;
+      _ttsVolume = ttsVolume;
     });
   }
 
@@ -89,6 +100,16 @@ class _SettingPageState extends State<SettingPage> {
     setState(() {
       _alwaysPlayDashboardGuide = value;
     });
+  }
+
+  Future<void> _saveSettings() async {
+    await PreferencesService.setAlwaysShowOnboarding(_alwaysShowOnboarding);
+    await PreferencesService.setAlwaysPlayDashboardGuide(_alwaysPlayDashboardGuide);
+    await PreferencesService.setGesturesEnabled(_gesturesEnabled);
+    await PreferencesService.setFlashlightGestureEnabled(_flashlightGestureEnabled);
+    await PreferencesService.setMicrophoneGestureEnabled(_microphoneGestureEnabled);
+    await PreferencesService.setTtsSpeed(_ttsSpeed);
+    await PreferencesService.setTtsVolume(_ttsVolume);
   }
 
   @override
@@ -281,7 +302,8 @@ class _SettingPageState extends State<SettingPage> {
                           ),
                         ),
                         ElevatedButton(
-                          onPressed: () {
+                          onPressed: () async {
+                            await _saveSettings();
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(content: Text('Pengaturan disimpan!')),
                             );

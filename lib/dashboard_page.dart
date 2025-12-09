@@ -31,6 +31,13 @@ class _DashboardPageState extends State<DashboardPage> {
   bool _animateSubtitle = true; // Flag untuk mengontrol apakah perlu animasi atau tidak
   bool _isLongPressActive = false; // Track long press state
   bool _hasPlayedWelcomeGuide = false; // Track apakah sudah memainkan audio panduan
+  
+  // Settings
+  bool _gesturesEnabled = true;
+  bool _flashlightGestureEnabled = true;
+  bool _microphoneGestureEnabled = true;
+  double _ttsSpeed = 0.5;
+  double _ttsVolume = 1.0;
 
   @override
   void initState() {
@@ -42,6 +49,7 @@ class _DashboardPageState extends State<DashboardPage> {
       overlays: [],
     );
     
+    _loadSettings();
     _initializeCamera();
     _initAudioPlayer();
     _initializeTts();
@@ -57,12 +65,29 @@ class _DashboardPageState extends State<DashboardPage> {
     }
   }
 
+  // Load user settings
+  Future<void> _loadSettings() async {
+    final gesturesEnabled = await PreferencesService.getGesturesEnabled();
+    final flashlightGesture = await PreferencesService.getFlashlightGestureEnabled();
+    final microphoneGesture = await PreferencesService.getMicrophoneGestureEnabled();
+    final ttsSpeed = await PreferencesService.getTtsSpeed();
+    final ttsVolume = await PreferencesService.getTtsVolume();
+    
+    setState(() {
+      _gesturesEnabled = gesturesEnabled;
+      _flashlightGestureEnabled = flashlightGesture;
+      _microphoneGestureEnabled = microphoneGesture;
+      _ttsSpeed = ttsSpeed;
+      _ttsVolume = ttsVolume;
+    });
+  }
+
   // Inisialisasi TTS untuk back button warning
   Future<void> _initializeTts() async {
     try {
       await flutterTts.setLanguage("id-ID"); // Indonesian
-      await flutterTts.setSpeechRate(0.6); // Sedikit lebih cepat dari default
-      await flutterTts.setVolume(1.0); // Volume
+      await flutterTts.setSpeechRate(_ttsSpeed); // Use user-configured speed
+      await flutterTts.setVolume(_ttsVolume); // Use user-configured volume
       await flutterTts.setPitch(1.0); // Pitch
     } catch (e) {
       // TTS engine not available
@@ -79,12 +104,12 @@ class _DashboardPageState extends State<DashboardPage> {
     if (!alwaysPlayGuide && _hasPlayedWelcomeGuide) return;
     
     // Tunggu sebentar untuk memastikan TTS sudah siap
-    await Future.delayed(const Duration(milliseconds: 1500));
+    await Future.delayed(const Duration(milliseconds: 3000));
     
     try {
       await flutterTts.setLanguage("id-ID");
-      await flutterTts.setSpeechRate(0.6);
-      await flutterTts.setVolume(1.0);
+      await flutterTts.setSpeechRate(_ttsSpeed);
+      await flutterTts.setVolume(_ttsVolume);
       await flutterTts.setPitch(1.0);
       
       String guideText = "Selamat datang di AI Tunanetra. "
@@ -118,8 +143,8 @@ class _DashboardPageState extends State<DashboardPage> {
   Future<void> _playButtonFeedback(String message) async {
     try {
       await flutterTts.setLanguage("id-ID");
-      await flutterTts.setSpeechRate(0.8); // Lebih cepat untuk feedback
-      await flutterTts.setVolume(1.0);
+      await flutterTts.setSpeechRate(_ttsSpeed * 1.3); // Sedikit lebih cepat untuk feedback
+      await flutterTts.setVolume(_ttsVolume);
       await flutterTts.setPitch(1.0);
       await flutterTts.speak(message);
     } catch (e) {
@@ -132,8 +157,8 @@ class _DashboardPageState extends State<DashboardPage> {
   Future<void> _playErrorFeedback(String errorMessage) async {
     try {
       await flutterTts.setLanguage("id-ID");
-      await flutterTts.setSpeechRate(0.7); // Slower for errors
-      await flutterTts.setVolume(1.0);
+      await flutterTts.setSpeechRate(_ttsSpeed); // Use normal speed for errors
+      await flutterTts.setVolume(_ttsVolume);
       await flutterTts.setPitch(0.9); // Slightly lower pitch for errors
       await flutterTts.speak(errorMessage);
     } catch (e) {
@@ -330,6 +355,9 @@ class _DashboardPageState extends State<DashboardPage> {
                     () => DoubleTapGestureRecognizer(),
                     (DoubleTapGestureRecognizer instance) {
                       instance.onDoubleTap = () {
+                        // Check if gestures are enabled and flashlight gesture is enabled
+                        if (!_gesturesEnabled || !_flashlightGestureEnabled) return;
+                        
                         // Cancel any pending long press
                         _isLongPressActive = false;
                         _toggleFlashlight();
@@ -343,6 +371,9 @@ class _DashboardPageState extends State<DashboardPage> {
                     ),
                     (LongPressGestureRecognizer instance) {
                       instance.onLongPressStart = (details) {
+                        // Check if gestures are enabled and microphone gesture is enabled
+                        if (!_gesturesEnabled || !_microphoneGestureEnabled) return;
+                        
                         // Mark long press as active
                         _isLongPressActive = true;
                         
@@ -462,7 +493,7 @@ class _DashboardPageState extends State<DashboardPage> {
                 label: 'Panduan',
                 onPressed: () async {
                   await flutterTts.speak("Membuka panduan penggunaan");
-                  await Future.delayed(const Duration(milliseconds: 500));
+                  await Future.delayed(const Duration(milliseconds: 3000));
                   Navigator.of(context).pushReplacement(
                     MaterialPageRoute(builder: (context) => const OnboardingScreen(playAudio: true)),
                   );
@@ -479,9 +510,12 @@ class _DashboardPageState extends State<DashboardPage> {
                 label: 'Pengaturan',
                 onPressed: () async {
                   await flutterTts.stop();
-                  Navigator.of(context).push(
+                  await Navigator.of(context).push(
                     MaterialPageRoute(builder: (context) => const SettingPage()),
                   );
+                  // Reload settings after returning from settings page
+                  await _loadSettings();
+                  await _initializeTts(); // Re-initialize TTS with new settings
                 },
               ),
             ),
