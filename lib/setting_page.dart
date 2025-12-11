@@ -300,52 +300,60 @@ class _SettingPageState extends State<SettingPage> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
-                        ElevatedButton(
-                          onPressed: () async {
-                            await _playButtonFeedback('Batal');
-                            await Future.delayed(const Duration(milliseconds: 600));
-                            Navigator.of(context).pop(); // Kembali ke halaman sebelumnya (dashboard)
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              side: const BorderSide(color: Color(0xFF0D0D0D), width: 2.0),
+                        Semantics(
+                          label: 'Tombol Batal. Kembali tanpa menyimpan perubahan',
+                          button: true,
+                          child: ElevatedButton(
+                            onPressed: () async {
+                              await _playButtonFeedback('Batal');
+                              await Future.delayed(const Duration(milliseconds: 600));
+                              Navigator.of(context).pop(); // Kembali ke halaman sebelumnya (dashboard)
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                side: const BorderSide(color: Color(0xFF0D0D0D), width: 2.0),
+                              ),
+                              padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
                             ),
-                            padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
-                          ),
-                          child: Text(
-                            'Batal',
-                            style: TextStyle(
-                              fontSize: 18,
-                              color: const Color(0xFF0D0D0D),
-                              fontFamily: 'Helvetica',
+                            child: Text(
+                              'Batal',
+                              style: TextStyle(
+                                fontSize: 18,
+                                color: const Color(0xFF0D0D0D),
+                                fontFamily: 'Helvetica',
+                              ),
                             ),
                           ),
                         ),
-                        ElevatedButton(
-                          onPressed: () async {
-                            await _playButtonFeedback('Menyimpan pengaturan');
-                            await Future.delayed(const Duration(milliseconds: 1000));
-                            await _saveSettings();
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Pengaturan disimpan!')),
-                            );
-                            Navigator.of(context).pop(); // Kembali ke halaman sebelumnya (dashboard)
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF0D0D0D),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
+                        Semantics(
+                          label: 'Tombol Simpan. Menyimpan semua perubahan pengaturan',
+                          button: true,
+                          child: ElevatedButton(
+                            onPressed: () async {
+                              await _playButtonFeedback('Menyimpan pengaturan');
+                              await Future.delayed(const Duration(milliseconds: 1000));
+                              await _saveSettings();
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Pengaturan disimpan!')),
+                              );
+                              Navigator.of(context).pop(); // Kembali ke halaman sebelumnya (dashboard)
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF0D0D0D),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
                             ),
-                            padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
-                          ),
-                          child: Text(
-                            'Simpan!',
-                            style: TextStyle(
-                              fontSize: 18,
-                              color: Colors.white,
-                              fontFamily: 'Helvetica',
+                            child: Text(
+                              'Simpan!',
+                              style: TextStyle(
+                                fontSize: 18,
+                                color: Colors.white,
+                                fontFamily: 'Helvetica',
+                              ),
                             ),
                           ),
                         ),
@@ -359,14 +367,18 @@ class _SettingPageState extends State<SettingPage> {
             Positioned(
               top: 40,
               left: 20,
-              child: IconButton(
-                icon: Icon(Icons.arrow_back, color: _textColor, size: 30),
-                onPressed: () async {
-                  await _playButtonFeedback('Kembali');
-                  await Future.delayed(const Duration(milliseconds: 600));
-                  Navigator.of(context).pop(); // Kembali ke halaman sebelumnya (Dashboard)
-                },
-                tooltip: 'Kembali',
+              child: Semantics(
+                label: 'Tombol Kembali. Kembali ke halaman sebelumnya',
+                button: true,
+                child: IconButton(
+                  icon: Icon(Icons.arrow_back, color: _textColor, size: 30),
+                  onPressed: () async {
+                    await _playButtonFeedback('Kembali');
+                    await Future.delayed(const Duration(milliseconds: 600));
+                    Navigator.of(context).pop(); // Kembali ke halaman sebelumnya (Dashboard)
+                  },
+                  tooltip: 'Kembali',
+                ),
               ),
             ),
           ],

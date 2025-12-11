@@ -191,6 +191,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   final FlutterTts flutterTts = FlutterTts();
   double _ttsSpeed = 0.5;
   double _ttsVolume = 1.0;
+  bool _isAudioMuted = false;
 
   @override
   void initState() {
@@ -230,6 +231,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     await flutterTts.speak(
       "Disarankan untuk menyalakan suara ponsel untuk penggunaan aplikasi yang lebih baik. "
       "Pada pojok kanan atas terdapat tombol untuk melewati panduan ini. "
+      "Di bawah tombol melewati, terdapat tombol untuk membisukan atau menyalakan audio panduan. "
       "Selamat datang di AI Tunanetra. Aplikasi ini membantu kamu berinteraksi dengan lingkungan berbasis kamera pada ponsel. "
       "Geser layar untuk melihat panduan berikutnya, atau tekan tombol selanjutnya. "
       "Arahkan saja kamera dan pemindaian akan otomatis dijalankan. "
@@ -240,6 +242,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   // Play audio feedback untuk button actions
   Future<void> _playButtonFeedback(String message) async {
+    if (_isAudioMuted) return; // Skip jika audio dimute
+    
     try {
       await flutterTts.setLanguage("id-ID");
       await flutterTts.setSpeechRate(_ttsSpeed * 1.3);
@@ -248,6 +252,20 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       await flutterTts.speak(message);
     } catch (e) {
       // If TTS fails, continue without audio
+    }
+  }
+
+  // Toggle mute/unmute audio
+  void _toggleAudioMute() {
+    setState(() {
+      _isAudioMuted = !_isAudioMuted;
+    });
+    
+    if (_isAudioMuted) {
+      flutterTts.stop(); // Stop semua audio yang sedang berjalan
+      _playButtonFeedback('Audio dibisukan');
+    } else {
+      _playButtonFeedback('Audio dinyalakan');
     }
   }
 
@@ -329,21 +347,95 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             Positioned(
               top: 50,
               right: 24,
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  onTap: () async {
-                    await _playButtonFeedback('Melewati panduan');
-                    await Future.delayed(const Duration(milliseconds: 800));
-                    _navigateToDashboard();
-                  },
-                  borderRadius: BorderRadius.circular(20),
-                  child: Container(
-                    padding: const EdgeInsets.all(8),
-                    child: const Icon(
-                      Icons.close,
-                      color: Color(0xFF0D0D0D),
-                      size: 28,
+              child: Semantics(
+                label: 'Melewati Panduan',
+                button: true,
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: () async {
+                      await _playButtonFeedback('Melewati panduan');
+                      await Future.delayed(const Duration(milliseconds: 800));
+                      _navigateToDashboard();
+                    },
+                    borderRadius: BorderRadius.circular(20),
+                    child: Container(
+                      padding: const EdgeInsets.all(8),
+                      child: const Icon(
+                        Icons.close,
+                        color: Color(0xFF0D0D0D),
+                        size: 28,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+
+            // Tombol Mute/Unmute Audio di bawah Skip
+            Positioned(
+              top: 110,
+              right: 24,
+              child: Semantics(
+                label: _isAudioMuted 
+                    ? 'Tombol Nyalakan Audio. Audio panduan saat ini dibisukan'
+                    : 'Tombol Bisukan Audio. Audio panduan saat ini menyala',
+                button: true,
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: _toggleAudioMute,
+                    borderRadius: BorderRadius.circular(20),
+                    child: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: _isAudioMuted 
+                            ? Colors.red.withOpacity(0.2)
+                            : Colors.green.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Icon(
+                        _isAudioMuted ? Icons.volume_off : Icons.volume_up,
+                        color: _isAudioMuted 
+                            ? Colors.red.shade700
+                            : Colors.green.shade700,
+                        size: 28,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+
+            // Tombol Mute/Unmute Audio di bawah Skip
+            Positioned(
+              top: 110,
+              right: 24,
+              child: Semantics(
+                label: _isAudioMuted 
+                    ? 'Tombol Nyalakan Audio. Audio panduan saat ini dibisukan'
+                    : 'Tombol Bisukan Audio. Audio panduan saat ini menyala',
+                button: true,
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: _toggleAudioMute,
+                    borderRadius: BorderRadius.circular(20),
+                    child: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: _isAudioMuted 
+                            ? Colors.red.withOpacity(0.2)
+                            : Colors.green.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Icon(
+                        _isAudioMuted ? Icons.volume_off : Icons.volume_up,
+                        color: _isAudioMuted 
+                            ? Colors.red.shade700
+                            : Colors.green.shade700,
+                        size: 28,
+                      ),
                     ),
                   ),
                 ),
@@ -363,21 +455,25 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           if (_currentPage > 0)
-                            ElevatedButton.icon(
-                              onPressed: () async {
-                                _pageController.previousPage(
-                                  duration: const Duration(milliseconds: 300),
-                                  curve: Curves.easeInOut,
-                                );
-                              },
-                              icon: const Icon(Icons.arrow_back, size: 20),
-                              label: const Text('Sebelumnya'),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF0D0D0D),
-                                foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
+                            Semantics(
+                              label: 'Tombol Sebelumnya. Halaman sebelumnya',
+                              button: true,
+                              child: ElevatedButton.icon(
+                                onPressed: () async {
+                                  _pageController.previousPage(
+                                    duration: const Duration(milliseconds: 300),
+                                    curve: Curves.easeInOut,
+                                  );
+                                },
+                                icon: const Icon(Icons.arrow_back, size: 20),
+                                label: const Text('Sebelumnya'),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF0D0D0D),
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
                                 ),
                               ),
                             )
@@ -385,21 +481,25 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                             const SizedBox(width: 120), 
                           
                           if (_currentPage < _pages.length - 1)
-                            ElevatedButton.icon(
-                              onPressed: () async {
-                                _pageController.nextPage(
-                                  duration: const Duration(milliseconds: 300),
-                                  curve: Curves.easeInOut,
-                                );
-                              },
-                              label: const Text('Selanjutnya'),
-                              icon: const Icon(Icons.arrow_forward, size: 20),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF0D0D0D),
-                                foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
+                            Semantics(
+                              label: 'Tombol Selanjutnya. Halaman selanjutnya',
+                              button: true,
+                              child: ElevatedButton.icon(
+                                onPressed: () async {
+                                  _pageController.nextPage(
+                                    duration: const Duration(milliseconds: 300),
+                                    curve: Curves.easeInOut,
+                                  );
+                                },
+                                label: const Text('Selanjutnya'),
+                                icon: const Icon(Icons.arrow_forward, size: 20),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF0D0D0D),
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
                                 ),
                               ),
                             )
@@ -613,29 +713,33 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           const SizedBox(height: 40),
 
           if (data.showButton)
-            ElevatedButton.icon(
-              onPressed: () async {
-                await _playButtonFeedback('Memutar audio kembali. Mohon tunggu sebentar.');
-                await Future.delayed(const Duration(milliseconds: 2500));
-                await _playWelcomeAudio();
-              },
-              icon: const Icon(Icons.replay, size: 20),
-              label: const Text(
-                'Dengar Lagi',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontFamily: 'Helvetica',
-                  fontWeight: FontWeight.bold,
+            Semantics(
+              label: 'Tombol Dengar Lagi. Memutar ulang audio panduan',
+              button: true,
+              child: ElevatedButton.icon(
+                onPressed: () async {
+                  await _playButtonFeedback('Memutar audio kembali. Mohon tunggu sebentar.');
+                  await Future.delayed(const Duration(milliseconds: 2500));
+                  await _playWelcomeAudio();
+                },
+                icon: const Icon(Icons.replay, size: 20),
+                label: const Text(
+                  'Dengar Lagi',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontFamily: 'Helvetica',
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.white,
-                foregroundColor: const Color(0xFF0D0D0D),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  side: const BorderSide(color: Color(0xFF0D0D0D), width: 2),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  foregroundColor: const Color(0xFF0D0D0D),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    side: const BorderSide(color: Color(0xFF0D0D0D), width: 2),
+                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
                 ),
-                padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
               ),
             ),
 
@@ -643,26 +747,30 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
           
           if (data.showButton)
-            ElevatedButton(
-              onPressed: () async {
-                await _playButtonFeedback('Memasuki halaman utama');
-                await Future.delayed(const Duration(milliseconds: 1200));
-                _navigateToDashboard();
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF0D0D0D),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+            Semantics(
+              label: 'Tombol Anda Siap. Masuk ke halaman utama aplikasi',
+              button: true,
+              child: ElevatedButton(
+                onPressed: () async {
+                  await _playButtonFeedback('Memasuki halaman utama');
+                  await Future.delayed(const Duration(milliseconds: 1200));
+                  _navigateToDashboard();
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF0D0D0D),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 18),
                 ),
-                padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 18),
-              ),
-              child: const Text(
-                'Anda Siap?',
-                style: TextStyle(
-                  fontSize: 20,
-                  color: Colors.white,
-                  fontFamily: 'Helvetica',
-                  fontWeight: FontWeight.bold,
+                child: const Text(
+                  'Anda Siap?',
+                  style: TextStyle(
+                    fontSize: 20,
+                    color: Colors.white,
+                    fontFamily: 'Helvetica',
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ),
