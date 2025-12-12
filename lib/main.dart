@@ -4,7 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:aitunanetra/dashboard_page.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:aitunanetra/preferences_service.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:shared_preferences/shared_preferences.dart'; //local setting
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -16,6 +16,7 @@ void main() async {
     overlays: [],
   );
 
+  // orientasi hanya di potrait
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
@@ -30,7 +31,7 @@ class MainApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Aplikasi Login',
+      title: 'Aplikasi AI Tunanetra',
       theme: ThemeData(
         fontFamily: 'Helvetica', 
         primarySwatch: Colors.blue,
@@ -121,6 +122,7 @@ class _InitialSplashScreenState extends State<InitialSplashScreen> with SingleTi
     super.dispose();
   }
 
+  // splash screen styling
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -220,7 +222,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 
   Future<void> _playWelcomeAudio() async {
-    // Tambahkan delay untuk memastikan TTS engine dan UI sudah siap
+    if (_isAudioMuted) return; // Skip jika audio di-mute
+    
+    // delay untuk memastikan TTS engine dan UI sudah siap
     await Future.delayed(const Duration(milliseconds: 3000));
     
     await flutterTts.setLanguage("id-ID");
@@ -229,13 +233,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     await flutterTts.setPitch(1.0);
 
     await flutterTts.speak(
-      "Disarankan untuk menyalakan suara ponsel untuk penggunaan aplikasi yang lebih baik. "
-      "Pada pojok kanan atas terdapat tombol untuk melewati panduan ini. "
-      "Di bawah tombol melewati, terdapat tombol untuk membisukan atau menyalakan audio panduan. "
-      "Selamat datang di AI Tunanetra. Aplikasi ini membantu kamu berinteraksi dengan lingkungan berbasis kamera pada ponsel. "
-      "Geser layar untuk melihat panduan berikutnya, atau tekan tombol selanjutnya. "
-      "Arahkan saja kamera dan pemindaian akan otomatis dijalankan. "
-      "Ketuk layar dua kali untuk menyalakan atau mematikan lampu senter, dan tekan tahan layar untuk mengaktifkan mikrofon. "
+      "Disarankan untuk menyalakan suara ponsel untuk penggunaan aplikasi yang lebih baik."
+      "Pada pojok kanan atas terdapat tombol untuk melewati panduan ini."
+      "Di bawah tombol melewati, terdapat tombol untuk membisukan atau menyalakan audio panduan."
+      "Selamat datang di AI Tunanetra. Aplikasi ini membantu kamu berinteraksi dengan lingkungan berbasis kamera pada ponsel."
+      "Geser layar untuk melihat panduan berikutnya, atau tekan tombol selanjutnya."
+      "Arahkan saja kamera dan pemindaian akan otomatis dijalankan."
+      "Ketuk layar dua kali untuk menyalakan atau mematikan lampu senter, dan tekan tahan layar untuk mengaktifkan mikrofon."
       "Jika sudah siap menggunakan aplikasi, tekan tombol di bawah pada halaman terakhir."
     );
   }
@@ -313,6 +317,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     }
   }
 
+  //boarding screen styling
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -344,6 +349,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               },
             ),
 
+            // Tombol Skip
             Positioned(
               top: 50,
               right: 24,
@@ -407,41 +413,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               ),
             ),
 
-            // Tombol Mute/Unmute Audio di bawah Skip
-            Positioned(
-              top: 110,
-              right: 24,
-              child: Semantics(
-                label: _isAudioMuted 
-                    ? 'Tombol Nyalakan Audio. Audio panduan saat ini dibisukan'
-                    : 'Tombol Bisukan Audio. Audio panduan saat ini menyala',
-                button: true,
-                child: Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    onTap: _toggleAudioMute,
-                    borderRadius: BorderRadius.circular(20),
-                    child: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: _isAudioMuted 
-                            ? Colors.red.withOpacity(0.2)
-                            : Colors.green.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Icon(
-                        _isAudioMuted ? Icons.volume_off : Icons.volume_up,
-                        color: _isAudioMuted 
-                            ? Colors.red.shade700
-                            : Colors.green.shade700,
-                        size: 28,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-
             Positioned(
               bottom: 20,
               left: 0,
@@ -456,7 +427,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         children: [
                           if (_currentPage > 0)
                             Semantics(
-                              label: 'Tombol Sebelumnya. Halaman sebelumnya',
+                              label: 'Tombol Halaman Sebelumnya.',
                               button: true,
                               child: ElevatedButton.icon(
                                 onPressed: () async {
@@ -482,7 +453,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           
                           if (_currentPage < _pages.length - 1)
                             Semantics(
-                              label: 'Tombol Selanjutnya. Halaman selanjutnya',
+                              label: 'Tombol Halaman selanjutnya',
                               button: true,
                               child: ElevatedButton.icon(
                                 onPressed: () async {
@@ -714,7 +685,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
           if (data.showButton)
             Semantics(
-              label: 'Tombol Dengar Lagi. Memutar ulang audio panduan',
+              label: 'Tombol untuk Memutar ulang audio panduan',
               button: true,
               child: ElevatedButton.icon(
                 onPressed: () async {
@@ -748,7 +719,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           
           if (data.showButton)
             Semantics(
-              label: 'Tombol Anda Siap. Masuk ke halaman utama aplikasi',
+              label: 'Tombol untuk Masuk ke halaman utama aplikasi',
               button: true,
               child: ElevatedButton(
                 onPressed: () async {
@@ -779,6 +750,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     );
   }
 
+  // dot for sliding indicator
   Widget _buildIndicator(bool isActive) {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
@@ -786,7 +758,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       height: 8.0,
       width: isActive ? 24.0 : 8.0,
       decoration: BoxDecoration(
-        color: isActive ? const Color(0xFF0D0D0D) : const Color(0x4D0D0D0D), // 0x4D = ~30% opacity
+        color: isActive ? const Color(0xFF0D0D0D) : const Color(0x4D0D0D0D),
         borderRadius: BorderRadius.circular(4.0),
       ),
     );

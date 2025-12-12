@@ -20,7 +20,7 @@ class _SettingPageState extends State<SettingPage> {
   bool _flashlightGestureEnabled = true;
   bool _microphoneGestureEnabled = true;
   
-  // TTS settings
+  // TTS radio default settings
   double _ttsSpeed = 0.8; // 0.3, 0.5, 0.8
   double _ttsVolume = 1.0; // 0.3, 0.7, 1.0
 
@@ -51,7 +51,7 @@ class _SettingPageState extends State<SettingPage> {
     final ttsSpeed = await PreferencesService.getTtsSpeed();
     final ttsVolume = await PreferencesService.getTtsVolume();
     
-    // Tunggu sebentar untuk memastikan TTS sudah siap
+    // Tunggu bentar untuk memastikan TTS sudah siap
     await Future.delayed(const Duration(milliseconds: 500));
     
     try {
@@ -62,7 +62,7 @@ class _SettingPageState extends State<SettingPage> {
       
       await flutterTts.speak("Scroll ke bawah untuk opsi lebih lanjut.");
     } catch (e) {
-      // Jika TTS gagal, tidak masalah
+      // Jika TTS gagal, gapapa
     }
   }
 
@@ -128,7 +128,7 @@ class _SettingPageState extends State<SettingPage> {
       await flutterTts.setPitch(1.0);
       await flutterTts.speak(message);
     } catch (e) {
-      // If TTS fails, continue without audio
+      // kalo gagal, gapapa
     }
   }
 
@@ -136,7 +136,7 @@ class _SettingPageState extends State<SettingPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: BoxDecoration( //warna background
+        decoration: BoxDecoration( 
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
@@ -214,7 +214,7 @@ class _SettingPageState extends State<SettingPage> {
                     ),
                     const SizedBox(height: 10),
 
-                    // Gesture sub-options (only show if gestures enabled)
+                    // Gesture sub-options
                     if (_gesturesEnabled) ...[
                       Padding(
                         padding: const EdgeInsets.only(left: 16.0),
@@ -375,7 +375,7 @@ class _SettingPageState extends State<SettingPage> {
                   onPressed: () async {
                     await _playButtonFeedback('Kembali');
                     await Future.delayed(const Duration(milliseconds: 600));
-                    Navigator.of(context).pop(); // Kembali ke halaman sebelumnya (Dashboard)
+                    Navigator.of(context).pop(); // Kembali ke dashboard
                   },
                   tooltip: 'Kembali',
                 ),
@@ -387,7 +387,7 @@ class _SettingPageState extends State<SettingPage> {
     );
   }
 
-  // Helper method untuk membuat toggle container
+  // toggle pada setting
   Widget _buildToggleContainer({
     required String title,
     required String description,
@@ -438,7 +438,7 @@ class _SettingPageState extends State<SettingPage> {
     );
   }
 
-  // Helper method untuk slider settings
+  // radio slider pada setting
   Widget _buildSliderSetting({
     required IconData icon,
     required String title,

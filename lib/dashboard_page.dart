@@ -21,15 +21,15 @@ class DashboardPage extends StatefulWidget {
 class _DashboardPageState extends State<DashboardPage> {
   CameraController? _cameraController;
   List<CameraDescription>? _cameras;
-  bool _isFlashOn = false; //default senter kamera mati
-  bool _isMicOn = false; //default mikrofon mati
-  bool _isSubtitleOn = false; //default subtitle mati
+  bool _isFlashOn = false; 
+  bool _isMicOn = false; 
+  bool _isSubtitleOn = false;
   final AudioPlayer _audioPlayer = AudioPlayer();
   FlutterTts flutterTts = FlutterTts();
-  DateTime? _lastBackPressed; //untuk tracking double tap back button
-  double _subtitleBoxHeight = 0.18; // Rasio tinggi subtitle box (default lebih kecil ~18%)
-  bool _animateSubtitle = true; // Flag untuk mengontrol apakah perlu animasi atau tidak
-  bool _isLongPressActive = false; // Track long press state
+  DateTime? _lastBackPressed; //tracking back button
+  double _subtitleBoxHeight = 0.18; 
+  bool _animateSubtitle = true; 
+  bool _isLongPressActive = false;
   
   // Settings
   bool _gesturesEnabled = true;
@@ -146,7 +146,7 @@ class _DashboardPageState extends State<DashboardPage> {
       await flutterTts.setPitch(1.0);
       await flutterTts.speak(message);
     } catch (e) {
-      // If TTS fails, show visual message only
+      // kalo gagal, teks saja
       _showMessage(message);
     }
   }
@@ -481,7 +481,6 @@ class _DashboardPageState extends State<DashboardPage> {
               ),
 
             // 3 Button di bagian atas: Panduan (kiri), Pengaturan (tengah), Keluar (kanan)
-            
             // Button Panduan di pojok kiri atas
             Positioned(
               top: 40,
@@ -491,7 +490,7 @@ class _DashboardPageState extends State<DashboardPage> {
                 label: 'Panduan',
                 onPressed: () async {
                   await flutterTts.speak("Membuka panduan penggunaan. Tunggu sebentar");
-                  await Future.delayed(const Duration(milliseconds: 3000));
+                  await Future.delayed(const Duration(milliseconds: 3000)); // perlu delay untuk load konten panduan
                   Navigator.of(context).pushReplacement(
                     MaterialPageRoute(builder: (context) => const OnboardingScreen(playAudio: true)),
                   );
@@ -502,7 +501,7 @@ class _DashboardPageState extends State<DashboardPage> {
             // Button Pengaturan di tengah atas
             Positioned(
               top: 40,
-              left: MediaQuery.of(context).size.width / 2 - 45, // Center (90px width / 2)
+              left: MediaQuery.of(context).size.width / 2 - 45,
               child: _buildTopButton(
                 icon: Icons.settings,
                 label: 'Pengaturan',
@@ -510,7 +509,7 @@ class _DashboardPageState extends State<DashboardPage> {
                   await flutterTts.stop();
                   await _playButtonFeedback('Membuka pengaturan');
                   // Tunggu audio selesai sebelum pindah halaman
-                  await Future.delayed(const Duration(milliseconds: 1500));
+                  await Future.delayed(const Duration(milliseconds: 1500)); // sama, perlu delay untuk load
                   await Navigator.of(context).push(
                     MaterialPageRoute(builder: (context) => const SettingPage()),
                   );
@@ -588,7 +587,6 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
-  // Helper method untuk membuat tombol aksi bawah dengan custom background color dan label terintegrasi (untuk TalkBack)
   Widget _buildActionButton({
     required IconData icon, 
     required VoidCallback onPressed,
@@ -604,11 +602,11 @@ class _DashboardPageState extends State<DashboardPage> {
         child: Container(
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: backgroundColor, // Custom background color
+            color: backgroundColor, 
             borderRadius: BorderRadius.circular(12),
             boxShadow: [
               BoxShadow(
-                color: const Color(0x4D000000), // Black with 30% opacity
+                color: const Color(0x4D000000), 
                 spreadRadius: 1,
                 blurRadius: 3,
                 offset: const Offset(0, 2),
