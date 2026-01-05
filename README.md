@@ -1,222 +1,322 @@
-# AITUNANETRA - Mobile Application for Low-Vision Students
+<div align="center">
 
-## Research Overview & Results
+# 🌟 AITUNANETRA
 
-AITUNANETRA is a mobile application developed specifically to assist low-vision students in understanding objects and their surrounding environment within educational contexts. The application was created through a user-centered design approach with direct involvement of students from SLB-A YPAB Gebang Putih Surabaya, resulting in a solution tailored to their unique needs and challenges.
+### AI-Powered Assistive Mobile Application for Low-Vision Students
 
-### Development Methodology
+[![Flutter](https://img.shields.io/badge/Flutter-3.8.1+-02569B?logo=flutter&logoColor=white)](https://flutter.dev)
+[![Dart](https://img.shields.io/badge/Dart-3.8.1+-0175C2?logo=dart&logoColor=white)](https://dart.dev)
+[![Platform](https://img.shields.io/badge/Platform-Android%20%7C%20iOS-green)](https://github.com/HHHAAAANNNNN/AItunanetra)
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-The application was developed using the **Design Thinking methodology** with three iterative testing cycles involving five low-vision students. This approach enabled continuous refinement based on real user feedback, addressing critical usability issues at each stage:
+**An innovative mobile application designed to empower low-vision students through AI-driven object recognition and voice-guided navigation.**
 
-- **First iteration** identified major pain points including confusing initial guides, unnecessary login pages, hidden exit buttons, and gesture controls incompatible with TalkBack
-- **Second iteration** resolved navigation issues, improved button labeling for screen readers, and added easy access to user guides
-- **Final iteration** produced a version that students could operate independently with minimal assistance
+[Features](#-key-features) • [Screenshots](#-application-screenshots) • [Installation](#-installation) • [Usage](#-how-to-use) • [Research](#-research--evaluation)
 
-### Key Features
-
-- **Voice-guided interface** with comprehensive audio instructions in Indonesian
-- **Dual-control system** for both gesture-based and button-based interactions
-- **Integrated flashlight and microphone controls** optimized for low-vision users
-- **TalkBack-compatible design** with proper text labels for all interactive elements
-- **Streamlined navigation** without unnecessary authentication steps
-- **On-demand tutorial access** from any screen within the application
-
-### Research Results & Evaluation
-
-The final prototype was evaluated using the **QUIM (Quality in Use Integrated Measure)** instrument across 10 usability factors. The application achieved an overall score of **79.2** (categorized as "Good"), with particularly strong performance in:
-
-- **Learnability (92/100)** - Students quickly understood how to use the application after minimal instruction
-- **Efficiency (90/100)** - The application effectively helped students complete assigned tasks
-- **Accessibility (86/100)** - Excellent compatibility with TalkBack and other screen readers
-- **Satisfaction (84/100)** - Positive user experience during educational activities
-- **Usefulness (86/100)** - Practical value in classroom learning contexts
-
-Areas identified for improvement include:
-- **Security (64/100)** and **Trust (68/100)** - Students expressed concerns about camera/microphone usage permissions and data privacy
-- **Effectiveness (74/100)**, **Productivity (72/100)** and **Universality (76/100)** - Further adaptation needed for diverse learning scenarios
-
-### Conclusion & Future Development
-
-AITUNANETRA demonstrates that Design Thinking methodology is highly effective for developing assistive applications for visually impaired users, particularly when incorporating multiple iterations with direct user involvement. The research confirms that applications for this demographic require specialized design considerations beyond standard accessibility guidelines.
-
-**Recommended improvements for future development:**
-- Enhanced security explanations to address user concerns about permissions
-- Simplified user flows to minimize navigation steps to core features
-- Expansion of educational scenarios supported by the application
-- Testing with totally blind users to ensure compatibility across the full spectrum of visual impairments
-- Integration of participatory design approaches involving teachers and parents as co-designers
-
-This research makes a meaningful contribution to assistive technology for education by demonstrating how context-specific applications can be developed through iterative user testing with the actual beneficiaries of the technology, resulting in solutions that genuinely address their unique challenges in educational settings.
+</div>
 
 ---
 
-## Setup Instructions
+## 📖 About AITUNANETRA
 
-Follow these step-by-step instructions to set up and deploy AITUNANETRA on your mobile phone.
+AITUNANETRA is a mobile application specifically developed to assist low-vision students in understanding objects and navigating their surrounding environment within educational contexts. Built using Flutter and powered by AI, this application was created through a user-centered design approach with direct involvement of students from **SLB-A YPAB Gebang Putih Surabaya**, ensuring the solution is tailored to their unique needs and challenges.
+
+### 🎯 Key Features
+
+- 🎤 **Voice-Guided Interface** - Comprehensive audio instructions in Indonesian language
+- 🖐️ **Dual-Control System** - Support for both gesture-based and button-based interactions
+- 🔦 **Integrated Controls** - Built-in flashlight and microphone controls optimized for low-vision users
+- ♿ **TalkBack Compatible** - Full accessibility support with proper text labels for screen readers
+- 🚀 **Streamlined Navigation** - No unnecessary authentication steps, direct access to features
+- 📚 **On-Demand Tutorial** - Access user guides from any screen within the application
+- 📸 **AI Object Recognition** - Camera-based object detection and description
+- 🎨 **High Contrast UI** - Optimized visual design for users with low vision
+
+---
+
+## 📱 Application Screenshots
+
+### Main Interface & Mockup
+<div align="center">
+<img src="screenshots/1. Main Mockup.png" alt="Main Mockup" width="300"/>
+
+*Complete UI/UX design mockup showcasing the application's visual structure*
+</div>
+
+### Interactive Tutorial Screens
+
+<div align="center">
+<img src="screenshots/2. Panduan pertama.png" alt="Tutorial Screen 1" width="250"/>
+<img src="screenshots/3. Panduan kedua.png" alt="Tutorial Screen 2" width="250"/>
+<img src="screenshots/4. Panduan ketiga.png" alt="Tutorial Screen 3" width="250"/>
+
+*Step-by-step tutorial screens guiding users through the application features*
+</div>
+
+<div align="center">
+<img src="screenshots/5. Panduan keempat.png" alt="Tutorial Screen 4" width="300"/>
+
+*Final tutorial screen with voice-guided instructions*
+</div>
+
+### Main Dashboard
+<div align="center">
+<img src="screenshots/6. Main Dashboard.png" alt="Main Dashboard" width="300"/>
+
+*Main dashboard with intuitive controls for camera, flashlight, and microphone*
+</div>
+
+### Settings Interface
+
+<div align="center">
+<img src="screenshots/7. Setting Pertama.png" alt="Settings Screen 1" width="250"/>
+<img src="screenshots/8. Setting Kedua.png" alt="Settings Screen 2" width="250"/>
+
+*Accessible settings screens for customizing application preferences*
+</div>
+
+---
+
+## 🔬 Research & Evaluation
+
+### Development Methodology
+
+The application was developed using the **Design Thinking methodology** with three iterative testing cycles involving five low-vision students. This approach enabled continuous refinement based on real user feedback:
+
+| Iteration | Key Improvements |
+|-----------|-----------------|
+| **First** | Identified pain points: confusing guides, unnecessary login pages, hidden buttons, gesture conflicts with TalkBack |
+| **Second** | Resolved navigation issues, improved screen reader labels, added easy guide access |
+| **Final** | Achieved independent operation with minimal assistance required |
+
+### QUIM Evaluation Results
+
+The final prototype was evaluated using the **QUIM (Quality in Use Integrated Measure)** instrument across 10 usability factors, achieving an overall score of **79.2/100** (categorized as "Good"):
+
+| Factor | Score | Category |
+|--------|-------|----------|
+| **Learnability** | 92/100 | ⭐ Excellent |
+| **Efficiency** | 90/100 | ⭐ Excellent |
+| **Accessibility** | 86/100 | ⭐ Excellent |
+| **Usefulness** | 86/100 | ⭐ Excellent |
+| **Satisfaction** | 84/100 | ✅ Very Good |
+| **Universality** | 76/100 | ✅ Good |
+| **Effectiveness** | 74/100 | ✅ Good |
+| **Productivity** | 72/100 | ✅ Good |
+| **Trust** | 68/100 | ⚠️ Moderate |
+| **Security** | 64/100 | ⚠️ Moderate |
+
+**Key Findings:**
+- ✅ Students quickly understood how to use the application after minimal instruction
+- ✅ Effective assistance in completing educational tasks
+- ✅ Excellent TalkBack and screen reader compatibility
+- ✅ Positive user experience during classroom activities
+- ⚠️ Further explanation needed for camera/microphone permissions to address privacy concerns
+
+---
+
+## 🛠️ Technology Stack
+
+- **Framework:** Flutter 3.8.1+
+- **Language:** Dart 3.8.1+
+- **Key Dependencies:**
+  - `camera` ^0.10.5 - Camera functionality for object recognition
+  - `flutter_tts` ^4.2.0 - Text-to-speech for voice guidance
+  - `audioplayers` ^5.2.1 - Audio playback capabilities
+  - `permission_handler` ^11.0.1 - Managing device permissions
+  - `shared_preferences` ^2.2.2 - Local data storage
+
+---
+
+## 📥 Installation
 
 ### Prerequisites
 
 Before you begin, ensure you have the following installed on your computer:
 
-1. **Flutter SDK** (version 3.8.1 or higher)
-   - Download from [flutter.dev](https://flutter.dev/docs/get-started/install)
-   - Verify installation: `flutter doctor`
+| Tool | Version | Purpose |
+|------|---------|---------|
+| **Flutter SDK** | 3.8.1+ | Mobile app framework |
+| **Dart SDK** | 3.8.1+ | Programming language |
+| **Android Studio** | Latest | Android development (or Xcode for iOS) |
+| **Git** | Latest | Version control |
 
-2. **Android Studio** (for Android deployment) or **Xcode** (for iOS deployment)
-   - Android Studio: [developer.android.com](https://developer.android.com/studio)
-   - Xcode: Available on Mac App Store (macOS only)
+**Quick verification:**
+```bash
+flutter doctor
+```
 
-3. **Git** - To clone the repository
-   - Download from [git-scm.com](https://git-scm.com/)
+### 🚀 Quick Start
 
-4. **A mobile device** (Android or iOS) with USB debugging enabled
-
-### Step 1: Clone the Repository
-
-Open your terminal or command prompt and run:
-
+1️⃣ **Clone the Repository**
 ```bash
 git clone https://github.com/HHHAAAANNNNN/AItunanetra.git
 cd AItunanetra
 ```
 
-### Step 2: Install Dependencies
-
-Install all required Flutter packages:
-
+2️⃣ **Install Dependencies**
 ```bash
 flutter pub get
 ```
 
-This will download and install all dependencies listed in `pubspec.yaml`, including:
-- `camera` - Camera functionality for object recognition
-- `permission_handler` - Managing device permissions
-- `audioplayers` - Audio playback capabilities
-- `flutter_tts` - Text-to-speech functionality
-- `shared_preferences` - Local data storage
-- And other required packages
+3️⃣ **Connect Your Device**
 
-### Step 3: Prepare Your Mobile Device
+**For Android:**
+- Enable **Developer Options** (Settings → About Phone → Tap Build Number 7 times)
+- Enable **USB Debugging** (Settings → Developer Options)
+- Connect via USB cable
 
-#### For Android:
+**For iOS:**
+- Connect iPhone/iPad via USB cable
+- Trust the computer when prompted
+- Configure signing in Xcode (`ios/Runner.xcworkspace`)
 
-1. **Enable Developer Options** on your Android device:
-   - Go to **Settings** > **About Phone**
-   - Tap **Build Number** 7 times to enable Developer Options
-   - Go back to **Settings** > **Developer Options**
-   - Enable **USB Debugging**
-
-2. **Connect your device** to your computer via USB cable
-
-3. **Verify connection**:
-   ```bash
-   flutter devices
-   ```
-   You should see your device listed
-
-#### For iOS (macOS only):
-
-1. **Connect your iPhone/iPad** to your Mac via USB cable
-
-2. **Trust the computer** when prompted on your iOS device
-
-3. **Configure signing** in Xcode:
-   - Open `ios/Runner.xcworkspace` in Xcode
-   - Select your device as the target
-   - Go to **Signing & Capabilities**
-   - Select your development team
-
-4. **Verify connection**:
-   ```bash
-   flutter devices
-   ```
-   You should see your device listed
-
-### Step 4: Build and Install the Application
-
-#### For Android:
-
-Run the following command to build and install the app on your connected Android device:
-
+4️⃣ **Verify Device Connection**
 ```bash
+flutter devices
+```
+
+5️⃣ **Run the Application**
+```bash
+# Run in debug mode
+flutter run
+
+# Or build release version
 flutter run --release
 ```
 
-Or to create an installable APK file:
+### 📦 Building for Distribution
 
+**Android APK:**
 ```bash
 flutter build apk --release
 ```
+*Output: `build/app/outputs/flutter-apk/app-release.apk`*
 
-The APK file will be located at: `build/app/outputs/flutter-apk/app-release.apk`
-
-Transfer this APK to your Android device and install it manually.
-
-#### For iOS:
-
-Run the following command to build and install the app on your connected iOS device:
-
-```bash
-flutter run --release
-```
-
-Or to create an IPA file for distribution:
-
+**iOS IPA:**
 ```bash
 flutter build ios --release
 ```
 
-### Step 5: Grant Required Permissions
+---
 
-When you first launch AITUNANETRA on your mobile device, you will be prompted to grant permissions:
+## 📱 How to Use
 
-1. **Camera Permission** - Required for object recognition functionality
-2. **Microphone Permission** - Required for voice commands and audio input
-3. **Storage Permission** (Android only) - May be required for saving application data
+### First Launch
 
-**Important**: Tap **Allow** for all permissions to ensure the application functions properly.
+1. **Grant Permissions** - Allow camera, microphone, and storage access when prompted
+2. **Complete Tutorial** - Follow the voice-guided tutorial on first launch
+3. **Enable TalkBack** (Optional) - For full accessibility support
 
-### Step 6: Using the Application
+### Main Features
 
-Once installed and permissions are granted:
+#### 📸 Object Recognition
+- Point camera at any object
+- Tap the camera button or use voice command
+- Listen to AI-generated description in Indonesian
 
-1. **Launch AITUNANETRA** from your device's app drawer
-2. The application will start with voice-guided instructions in Indonesian
-3. **TalkBack users**: Enable TalkBack for full accessibility support
-4. Use either **gesture controls** or **button controls** based on your preference
-5. Access the **tutorial** from any screen if you need guidance
-6. Use the **flashlight** and **microphone controls** as needed
+#### 🔦 Flashlight Control
+- Toggle flashlight for better visibility in dark environments
+- Accessible via large, high-contrast button
 
-### Troubleshooting
+#### 🎤 Voice Commands
+- Activate microphone for voice-based interaction
+- Receive audio feedback for all actions
 
-#### Common Issues:
+#### ⚙️ Settings
+- Customize voice speed and volume
+- Adjust interface preferences
+- Access user guide anytime
 
-**Device not detected:**
-- Ensure USB debugging is enabled (Android)
-- Try a different USB cable
-- Run `flutter doctor` to check for issues
+### Accessibility Tips
 
-**Build errors:**
-- Clean the build: `flutter clean`
-- Get dependencies again: `flutter pub get`
-- Try rebuilding: `flutter run`
+- **For TalkBack Users:** All buttons have descriptive labels
+- **For Low Vision:** High contrast mode enabled by default
+- **For Beginners:** Tutorial available from settings at any time
 
-**Permission issues:**
-- Manually grant permissions in device Settings > Apps > AITUNANETRA > Permissions
+---
 
-**App crashes on startup:**
-- Ensure your device meets minimum requirements
-- Check that all permissions are granted
-- Reinstall the application
+## 🔧 System Requirements
 
-#### Getting Help:
+| Platform | Minimum Version | Storage | Camera |
+|----------|----------------|---------|--------|
+| **Android** | Android 5.0 (API 21) | 100MB | Rear camera required |
+| **iOS** | iOS 12.0 | 100MB | Rear camera required |
 
-For additional support or to report issues, please visit the project repository or contact the development team.
+**Recommended:**
+- Speaker or headphones for audio feedback
+- Good lighting conditions for optimal object recognition
 
-### System Requirements
+---
 
-- **Android**: Android 5.0 (API level 21) or higher
-- **iOS**: iOS 12.0 or higher
-- **Storage**: Minimum 100MB free space
-- **Camera**: Device must have a functional rear camera
-- **Audio**: Speaker or headphones for audio feedback
+## 🤝 Contributing
+
+Contributions are welcome! This project was developed with a focus on accessibility and user-centered design. If you have suggestions for improvements:
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+### Areas for Contribution
+- 🌐 Additional language support
+- 🎨 UI/UX improvements
+- 🔍 Enhanced object recognition
+- 📖 Documentation improvements
+- ♿ Additional accessibility features
+
+---
+
+## 🎓 Research Context
+
+This application was developed as part of a research project focusing on assistive technology for education. The development followed a rigorous **Design Thinking methodology** with direct involvement of low-vision students from **SLB-A YPAB Gebang Putih Surabaya**.
+
+### Research Highlights
+
+✅ **Three iterative testing cycles** with five low-vision students  
+✅ **QUIM evaluation score of 79.2/100** (categorized as "Good")  
+✅ **92/100 in Learnability** - Demonstrates effective user-centered design  
+✅ **90/100 in Efficiency** - Proven to help students complete educational tasks  
+✅ **86/100 in Accessibility** - Excellent screen reader compatibility  
+
+### Future Development Directions
+
+- 🔒 Enhanced security explanations to address privacy concerns
+- 📊 Simplified user flows for faster access to core features
+- 🎓 Expansion of educational scenarios
+- 👥 Testing with totally blind users
+- 🤝 Integration of participatory design with teachers and parents
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+## 👥 Contact & Support
+
+- **Repository:** [github.com/HHHAAAANNNNN/AItunanetra](https://github.com/HHHAAAANNNNN/AItunanetra)
+- **Issues:** [Report a bug or request a feature](https://github.com/HHHAAAANNNNN/AItunanetra/issues)
+
+---
+
+## 🙏 Acknowledgments
+
+Special thanks to:
+- Students and staff at **SLB-A YPAB Gebang Putih Surabaya** for their invaluable participation in user testing
+- The Flutter community for excellent tools and resources
+- All contributors who have helped make this application more accessible
+
+---
+
+<div align="center">
+
+**Made with ❤️ for accessibility and inclusive education**
+
+⭐ Star this repository if you find it helpful!
+
+</div>
+
